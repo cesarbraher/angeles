@@ -7,7 +7,7 @@
  * @copyright   Todos los derechos reservados © 2026 César Augusto Bravo Hernández
  */
 
-const CACHE_STATIC = "angeles-static-v1.2.0";
+const CACHE_STATIC = "angeles-static-v1.3.0";
 const SHELL_URL = "/angeles/";
 const OFFLINE_URL = "/angeles/offline.html";
 
@@ -23,8 +23,10 @@ const STATIC_ASSETS = [
   "/angeles/js/rbac.js",
   "/angeles/js/search.js",
   "/angeles/js/signature-pad.js",
+  "/angeles/js/signature-block.js",
   "/angeles/js/views/public-views.js",
   "/angeles/js/views/auth-view.js",
+  "/angeles/js/views/register-view.js",
   "/angeles/js/views/dashboard-view.js",
   "/angeles/js/views/patients-view.js",
   "/angeles/js/views/chart-view.js",

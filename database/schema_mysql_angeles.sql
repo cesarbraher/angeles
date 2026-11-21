@@ -58,24 +58,40 @@ CREATE TABLE IF NOT EXISTS roles (
 -- 3. USUARIOS Y CREDENCIALES PROFESIONALES
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS users (
-    id                   BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    institution_id       BIGINT UNSIGNED NOT NULL DEFAULT 1,
-    role_id              BIGINT UNSIGNED NOT NULL,
-    username             VARCHAR(80)     NOT NULL,
-    email                VARCHAR(160)    NOT NULL,
-    full_name            VARCHAR(180)    NOT NULL,
-    professional_license VARCHAR(80)     NULL COMMENT 'Cédula Profesional / Registro',
-    specialty            VARCHAR(120)    NULL,
-    password_hash        VARCHAR(255)    NOT NULL,
-    is_active            TINYINT(1)      NOT NULL DEFAULT 1,
-    last_login_at        DATETIME        NULL,
-    created_at           DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at           DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id                     BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    institution_id         BIGINT UNSIGNED NOT NULL DEFAULT 1,
+    role_id                BIGINT UNSIGNED NOT NULL,
+    username               VARCHAR(80)     NOT NULL,
+    email                  VARCHAR(160)    NOT NULL,
+    full_name              VARCHAR(180)    NOT NULL,
+    professional_license   VARCHAR(80)     NULL COMMENT 'Cédula Profesional / Certificación',
+    specialty              VARCHAR(120)    NULL,
+    curp                   VARCHAR(18)     NULL,
+    rfc                    VARCHAR(13)     NULL,
+    birth_date             DATE            NULL,
+    phone                  VARCHAR(40)     NULL,
+    address                TEXT            NULL,
+    university             VARCHAR(180)    NULL,
+    graduation_year        INT             NULL,
+    experience_years       INT             NULL,
+    bio                    TEXT            NULL,
+    documents_json         JSON            NULL COMMENT 'Documentos aprobatorios (imágenes/PDFs) adjuntados al registro',
+    default_signature_data LONGTEXT        NULL COMMENT 'Firma autógrafa digital del profesional',
+    approval_status        ENUM('PENDING', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'APPROVED',
+    rejection_reason       TEXT            NULL,
+    approved_by_user_id    BIGINT UNSIGNED NULL,
+    approved_at            DATETIME        NULL,
+    password_hash          VARCHAR(255)    NOT NULL,
+    is_active              TINYINT(1)      NOT NULL DEFAULT 1,
+    last_login_at          DATETIME        NULL,
+    created_at             DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at             DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY uq_users_email (email),
     UNIQUE KEY uq_users_username (username),
     KEY idx_users_institution (institution_id),
     KEY idx_users_role (role_id),
+    KEY idx_users_approval (institution_id, approval_status),
     CONSTRAINT fk_users_institution FOREIGN KEY (institution_id) REFERENCES institutions(id),
     CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES roles(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -139,6 +155,7 @@ CREATE TABLE IF NOT EXISTS admissions (
     consent_signed_at         DATETIME        NULL,
     belongings_inventory_json JSON            NULL COMMENT 'Lista de objetos personales entregados al ingreso',
     belongings_notes          TEXT            NULL,
+    signatures_json           JSON            NULL COMMENT 'Firmas digitales y biometría (profesional, paciente y familiar)',
     updated_by_user_id        BIGINT UNSIGNED NULL,
     created_at                DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at                DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -167,6 +184,7 @@ CREATE TABLE IF NOT EXISTS medical_records (
     detox_protocol           TEXT            NULL,
     prescriptions_json       JSON            NULL COMMENT 'Recetas y control de administración de medicamentos',
     medical_alerts           TEXT            NULL,
+    signatures_json          JSON            NULL COMMENT 'Firmas digitales y biometría (profesional, paciente y familiar)',
     attending_physician_id   BIGINT UNSIGNED NULL,
     created_at               DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at               DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -216,6 +234,7 @@ CREATE TABLE IF NOT EXISTS psychological_records (
     risk_level              ENUM('BAJO', 'MODERADO', 'ALTO') NOT NULL DEFAULT 'BAJO',
     treatment_plan          TEXT            NULL,
     therapeutic_goals_json  JSON            NULL,
+    signatures_json         JSON            NULL COMMENT 'Firmas digitales y biometría (profesional, paciente y familiar)',
     specialist_user_id      BIGINT UNSIGNED NULL,
     created_at              DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at              DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -239,6 +258,7 @@ CREATE TABLE IF NOT EXISTS counseling_records (
     mentor_name           VARCHAR(160)    NULL,
     counselor_notes       TEXT            NULL,
     sessions_log_json     JSON            NULL COMMENT 'Bitácora de sesiones individuales, grupales y mentoría',
+    signatures_json       JSON            NULL COMMENT 'Firmas digitales y biometría (profesional, paciente y familiar)',
     counselor_user_id     BIGINT UNSIGNED NULL,
     created_at            DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at            DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -271,6 +291,7 @@ CREATE TABLE IF NOT EXISTS soap_notes (
     author_role            VARCHAR(60)     NOT NULL,
     professional_license   VARCHAR(80)     NULL,
     digital_signature_hash CHAR(64)        NOT NULL COMMENT 'SHA-256 inmutable de firma profesional',
+    signatures_json        JSON            NULL COMMENT 'Firmas digitales y biometría (profesional, paciente y familiar)',
     signed_at              DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_at             DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
@@ -299,6 +320,7 @@ CREATE TABLE IF NOT EXISTS discharges (
     support_commitments      TEXT            NULL,
     authorized_by_user_id    BIGINT UNSIGNED NULL,
     digital_signature_hash   CHAR(64)        NULL,
+    signatures_json          JSON            NULL COMMENT 'Firmas digitales y biometría (profesional, paciente y familiar)',
     created_at               DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at               DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
@@ -322,6 +344,7 @@ CREATE TABLE IF NOT EXISTS social_work_records (
     support_network_score TINYINT UNSIGNED NULL COMMENT 'Escala 1-10',
     family_visits_json    JSON            NULL COMMENT 'Bitácora de visitas y terapia familiar',
     observations          TEXT            NULL,
+    signatures_json       JSON            NULL COMMENT 'Firmas digitales y biometría (profesional, paciente y familiar)',
     updated_by_user_id    BIGINT UNSIGNED NULL,
     created_at            DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at            DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -446,29 +469,25 @@ VALUES (
 ) ON DUPLICATE KEY UPDATE name = VALUES(name);
 
 INSERT INTO roles (id, institution_id, code, display_name, description) VALUES
-    (1, 1, 'ADMIN',         'Administrador del Sistema', 'Control total clínico, administrativo y auditoría'),
-    (2, 1, 'ADMISSION',     'Admisión e Ingreso',        'Gestión de ingreso, consentimiento e inventario'),
-    (3, 1, 'DOCTOR',        'Médico Titular',            'Área médica, signos vitales, recetas, SOAP y altas'),
-    (4, 1, 'PSYCHOLOGIST',  'Psicólogo / Psiquiatra',    'Evaluación psicológica CIE-11/DSM-5, SOAP y altas'),
-    (5, 1, 'COUNSELOR',     'Consejero / Mentor',        'Programa de 12 Pasos, sesiones y notas SOAP'),
-    (6, 1, 'SOCIAL_WORKER', 'Trabajo Social',            'Estudio socioeconómico, entorno familiar y seguimiento')
+    (1, 1, 'ADMIN',         'Superadministrador Master', 'Control total clínico, autorización de profesionales, auditoría e impresión'),
+    (2, 1, 'DOCTOR',        'Médico',                    'Área médica, signos vitales, recetas, SOAP y altas'),
+    (3, 1, 'PSYCHIATRIST',  'Psiquiatra',                'Área médica y psiquiátrica, CIE-11/DSM-5, recetas, SOAP y altas'),
+    (4, 1, 'PSYCHOLOGIST',  'Psicólogo',                 'Evaluación psicológica CIE-11/DSM-5, SOAP y altas'),
+    (5, 1, 'COUNSELOR',     'Consejero en Adicciones',   'Programa de 12 Pasos, sesiones y notas SOAP'),
+    (6, 1, 'NUTRITIONIST',  'Nutriólogo',                'Evaluación nutricional, seguimiento médico-nutricional y SOAP'),
+    (7, 1, 'ADMISSION',     'Admisión e Ingreso',        'Gestión de ingreso, consentimiento e inventario'),
+    (8, 1, 'SOCIAL_WORKER', 'Trabajo Social',            'Estudio socioeconómico, entorno familiar y seguimiento')
 ON DUPLICATE KEY UPDATE display_name = VALUES(display_name);
 
--- Contraseña inicial de fase beta (bcrypt): Angeles2026! (Cambiar inmediatamente en producción)
-INSERT INTO users (id, institution_id, role_id, username, email, full_name, professional_license, specialty, password_hash, is_active) VALUES
-    (1, 1, 1, 'cesarbraher', 'cesarbraher@gmail.com',            'César Augusto Bravo Hernández',  'DEVREL-GOOGLE-2026', 'Arquitecto del Sistema / Dirección Técnica', '$2b$12$QUQtTYtrJjRVP8KIXcp4TOqoXY2Gw9syH5E5LRdiMqBdGhiC55AlO', 1),
-    (2, 1, 3, 'dr.mendoza',  'medico@angelesdeesperanzaac.org',  'Dra. Elena Mendoza Ríos',        'CED-MED-8945120',    'Medicina General y Adicciones',              '$2b$12$QUQtTYtrJjRVP8KIXcp4TOqoXY2Gw9syH5E5LRdiMqBdGhiC55AlO', 1),
-    (3, 1, 4, 'psi.navarro', 'psicologia@angelesdeesperanzaac.org', 'Mtro. Ricardo Navarro Silva', 'CED-PSI-7712045',    'Psicología Clínica y Psicoterapia',          '$2b$12$QUQtTYtrJjRVP8KIXcp4TOqoXY2Gw9syH5E5LRdiMqBdGhiC55AlO', 1),
-    (4, 1, 5, 'con.ramirez', 'consejeria@angelesdeesperanzaac.org', 'Luis Fernando Ramírez',       'CERT-CONADIC-4412',  'Consejería en Adicciones — 12 Pasos',        '$2b$12$QUQtTYtrJjRVP8KIXcp4TOqoXY2Gw9syH5E5LRdiMqBdGhiC55AlO', 1),
-    (5, 1, 2, 'adm.torres',  'admision@angelesdeesperanzaac.org', 'Lic. Sofía Torres Vega',        'ADM-IRA-2026',       'Coordinación de Admisión e Ingreso',         '$2b$12$QUQtTYtrJjRVP8KIXcp4TOqoXY2Gw9syH5E5LRdiMqBdGhiC55AlO', 1),
-    (6, 1, 6, 'ts.delgado',  'trabajosocial@angelesdeesperanzaac.org', 'Lic. Carmen Delgado Cruz', 'CED-TS-6182301',     'Trabajo Social y Terapia Familiar',          '$2b$12$QUQtTYtrJjRVP8KIXcp4TOqoXY2Gw9syH5E5LRdiMqBdGhiC55AlO', 1)
+-- Cuenta Master Única: usuario "abun" — ÁNGELES DE ESPERANZA
+INSERT INTO users (id, institution_id, role_id, username, email, full_name, professional_license, specialty, approval_status, password_hash, is_active) VALUES
+    (1, 1, 1, 'abun', 'contacto@angelesdeesperanzaac.org', 'ÁNGELES DE ESPERANZA', 'MASTER-ANGELES', 'Dirección General y Superadministración', 'APPROVED', '$2b$12$x.xw8s7lVK76GpngjsdK8.haNmUO1PmBbXKrxTLJSoX2uCXFzo/2u', 1)
 ON DUPLICATE KEY UPDATE full_name = VALUES(full_name);
 
--- Pacientes de demostración inicial (Fase Beta)
+-- Pacientes de ejemplo inicial
 INSERT INTO patients (id, institution_id, folio, first_name, last_name, curp, birth_date, gender, marital_status, education_level, occupation, phone, address, emergency_contact_name, emergency_contact_rel, emergency_contact_phone, status, planned_discharge_date, alert_flag, alert_summary, created_by_user_id) VALUES
-    (1, 1, 'ANG-2026-001', 'Carlos Alberto', 'Hernández López', 'HELC920514HGTLRN04', '1992-05-14', 'Masculino', 'Soltero', 'Preparatoria', 'Técnico Electricista', '462-118-4520', 'Col. Las Reynas, Irapuato, Gto.', 'María Guadalupe López', 'Madre', '462-118-9901', 'ADMITTED', DATE_ADD(CURDATE(), INTERVAL 28 DAY), 1, 'Seguimiento por ansiedad leve e insomnio en ajuste farmacológico', 5),
-    (2, 1, 'ANG-2026-002', 'Miguel Ángel', 'Sánchez Morales', 'SAMM881103HGTNRZ09', '1988-11-03', 'Masculino', 'Casado', 'Licenciatura trunca', 'Comerciante', '462-204-3190', 'Col. Moderna, Irapuato, Gto.', 'Patricia Gómez Ruiz', 'Esposa', '462-204-8821', 'ADMITTED', DATE_ADD(CURDATE(), INTERVAL 12 DAY), 0, NULL, 5),
-    (3, 1, 'ANG-2026-003', 'Jorge Eduardo', 'Vargas Ortega', 'VAOJ950221HGTRGD02', '1995-02-21', 'Masculino', 'Unión libre', 'Secundaria', 'Operador industrial', '462-311-6704', 'Fracc. Villas de Irapuato, Gto.', 'Roberto Vargas Díaz', 'Padre', '462-311-1208', 'DISCHARGED', CURDATE(), 0, NULL, 5)
+    (1, 1, 'ANG-2026-001', 'Carlos Alberto', 'Hernández López', 'HELC920514HGTLRN04', '1992-05-14', 'Masculino', 'Soltero', 'Preparatoria', 'Técnico Electricista', '462-118-4520', 'Col. Las Reynas, Irapuato, Gto.', 'María Guadalupe López', 'Madre', '462-118-9901', 'ADMITTED', DATE_ADD(CURDATE(), INTERVAL 28 DAY), 1, 'Seguimiento por ansiedad leve e insomnio en ajuste farmacológico', 1),
+    (2, 1, 'ANG-2026-002', 'Miguel Ángel', 'Sánchez Morales', 'SAMM881103HGTNRZ09', '1988-11-03', 'Masculino', 'Casado', 'Licenciatura trunca', 'Comerciante', '462-204-3190', 'Col. Moderna, Irapuato, Gto.', 'Patricia Gómez Ruiz', 'Esposa', '462-204-8821', 'ADMITTED', DATE_ADD(CURDATE(), INTERVAL 12 DAY), 0, NULL, 1)
 ON DUPLICATE KEY UPDATE first_name = VALUES(first_name);
 
 SET FOREIGN_KEY_CHECKS = 1;

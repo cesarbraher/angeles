@@ -16,12 +16,12 @@ from sqlalchemy.orm import Session, joinedload
 from backend.audit import log_audit
 from backend.config import get_settings
 from backend.database import get_db
-from backend.models import User
-from backend.rbac import get_role_permissions
-from backend.schemas import LoginRequest, LoginResponse, UserProfile
-from backend.security import create_access_token, get_current_user, verify_password
+from backend.models import Role, User
+from backend.rbac import REGISTERABLE_ROLES, get_role_permissions
+from backend.schemas import LoginRequest, LoginResponse, ProfessionalRegisterRequest, UserProfile
+from backend.security import create_access_token, get_current_user, hash_password, verify_password
 
-router = APIRouter(prefix="/api/v1/auth", tags=["Autenticación y Seguridad JWT"])
+router = APIRouter(prefix="/api/v1/auth", tags=["Autenticación y Registro Profesional"])
 
 
 def serialize_user_profile(user: User) -> UserProfile:
@@ -39,15 +39,95 @@ def serialize_user_profile(user: User) -> UserProfile:
         role_name=role_name,
         professional_license=user.professional_license,
         specialty=user.specialty,
+        approval_status=user.approval_status or "APPROVED",
         is_active=user.is_active,
         permissions=get_role_permissions(role_code),
         last_login_at=user.last_login_at,
     )
 
 
+@router.post("/register-professional", status_code=status.HTTP_201_CREATED)
+def register_professional(
+    payload: ProfessionalRegisterRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Registro público de profesionales clínicos (queda PENDIENTE hasta autorización del Master)."""
+    role_code = payload.role_code.strip().upper()
+    if role_code not in REGISTERABLE_ROLES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Perfil profesional no permitido. Seleccione Consejero, Psicólogo, Médico, Psiquiatra o Nutriólogo.",
+        )
+
+    role = db.query(Role).filter(Role.institution_id == 1, Role.code == role_code).first()
+    if not role:
+        raise HTTPException(status_code=400, detail="Rol profesional no configurado en la institución.")
+
+    uname = payload.username.strip().lower()
+    email = payload.email.strip().lower()
+    exists = db.query(User).filter(or_(User.username.ilike(uname), User.email.ilike(email))).first()
+    if exists:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="El nombre de usuario o correo electrónico ya se encuentra registrado.",
+        )
+
+    docs_serialized = [d.model_dump() for d in payload.documents]
+
+    new_prof = User(
+        institution_id=1,
+        role_id=role.id,
+        username=uname,
+        email=email,
+        full_name=payload.full_name.strip(),
+        professional_license=payload.professional_license.strip(),
+        specialty=payload.specialty.strip() if payload.specialty else role.display_name,
+        curp=payload.curp.strip().upper() if payload.curp else None,
+        rfc=payload.rfc.strip().upper() if payload.rfc else None,
+        birth_date=payload.birth_date,
+        phone=payload.phone.strip(),
+        address=payload.address.strip() if payload.address else None,
+        university=payload.university.strip() if payload.university else None,
+        graduation_year=payload.graduation_year,
+        experience_years=payload.experience_years,
+        bio=payload.bio.strip() if payload.bio else None,
+        documents_json=docs_serialized,
+        default_signature_data=payload.default_signature_data,
+        approval_status="PENDING",
+        is_active=False,
+        password_hash=hash_password(payload.password),
+    )
+    db.add(new_prof)
+    db.commit()
+    db.refresh(new_prof)
+
+    log_audit(
+        db,
+        action="PROFESSIONAL_REGISTER_SUBMITTED",
+        table_name="users",
+        record_id=new_prof.id,
+        details=f"Solicitud de registro profesional: {new_prof.full_name} ({role.display_name}) — {len(docs_serialized)} documento(s)",
+        role_override="APPLICANT",
+        request=request,
+    )
+
+    return {
+        "status": "pending_approval",
+        "id": new_prof.id,
+        "username": new_prof.username,
+        "role_name": role.display_name,
+        "documents_count": len(docs_serialized),
+        "message": (
+            "Tu solicitud de registro y documentación fueron enviadas correctamente. "
+            "La cuenta quedará activa en cuanto la administración de ÁNGELES DE ESPERANZA revise y autorice tu registro."
+        ),
+    }
+
+
 @router.post("/login", response_model=LoginResponse)
 def login(payload: LoginRequest, request: Request, db: Session = Depends(get_db)):
-    """Autentica al personal por correo o usuario, emite JWT y registra auditoría."""
+    """Autentica al Master o a profesionales autorizados, emite JWT y registra auditoría."""
     identifier = payload.identifier.strip().lower()
     user = (
         db.query(User)
@@ -56,7 +136,7 @@ def login(payload: LoginRequest, request: Request, db: Session = Depends(get_db)
         .first()
     )
 
-    if not user or not user.is_active or not verify_password(payload.password, user.password_hash):
+    if not user or not verify_password(payload.password, user.password_hash):
         log_audit(
             db,
             action="LOGIN_FAILED",
@@ -68,7 +148,29 @@ def login(payload: LoginRequest, request: Request, db: Session = Depends(get_db)
         )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Credenciales inválidas o cuenta inactiva.",
+            detail="Usuario o contraseña incorrectos.",
+        )
+
+    if user.approval_status == "PENDING":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=(
+                "Tu registro profesional está pendiente de revisión y autorización por parte "
+                "de la administración (ÁNGELES DE ESPERANZA). Podrás acceder en cuanto sea autorizado."
+            ),
+        )
+
+    if user.approval_status == "REJECTED":
+        reason = f" Motivo: {user.rejection_reason}" if user.rejection_reason else ""
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Tu solicitud de registro no fue autorizada.{reason}",
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Tu cuenta se encuentra desactivada. Contacta al administrador.",
         )
 
     user.last_login_at = datetime.now(timezone.utc).replace(tzinfo=None)

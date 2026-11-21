@@ -14,11 +14,44 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 # =============================================================================
-# AUTENTICACIÓN Y USUARIOS
+# AUTENTICACIÓN, REGISTRO PROFESIONAL Y USUARIOS
 # =============================================================================
 class LoginRequest(BaseModel):
     identifier: str = Field(..., min_length=2, description="Correo electrónico o nombre de usuario")
     password: str = Field(..., min_length=4)
+
+
+class DocumentAttachment(BaseModel):
+    file_name: str = Field(..., min_length=1, max_length=200)
+    doc_type: str = Field(default="CEDULA_O_TITULO", max_length=80)
+    mime_type: str = Field(..., max_length=100)
+    size_bytes: int = Field(default=0, ge=0)
+    data_url: str = Field(..., min_length=10)
+
+
+class ProfessionalRegisterRequest(BaseModel):
+    full_name: str = Field(..., min_length=3, max_length=180)
+    role_code: str = Field(..., description="COUNSELOR | PSYCHOLOGIST | DOCTOR | PSYCHIATRIST | NUTRITIONIST")
+    username: str = Field(..., min_length=3, max_length=80)
+    email: str = Field(..., min_length=5, max_length=160)
+    password: str = Field(..., min_length=6, max_length=120)
+    curp: str | None = Field(default=None, max_length=18)
+    rfc: str | None = Field(default=None, max_length=13)
+    birth_date: date | None = None
+    phone: str = Field(..., min_length=7, max_length=40)
+    address: str | None = None
+    professional_license: str = Field(..., min_length=3, max_length=80, description="Cédula Profesional o Certificación")
+    specialty: str | None = None
+    university: str | None = None
+    graduation_year: int | None = Field(default=None, ge=1950, le=2035)
+    experience_years: int | None = Field(default=None, ge=0, le=70)
+    bio: str | None = None
+    default_signature_data: str | None = None
+    documents: list[DocumentAttachment] = Field(default_factory=list)
+
+
+class ProfessionalDecisionRequest(BaseModel):
+    reason: str | None = None
 
 
 class UserProfile(BaseModel):
@@ -32,6 +65,7 @@ class UserProfile(BaseModel):
     role_name: str
     professional_license: str | None = None
     specialty: str | None = None
+    approval_status: str = "APPROVED"
     is_active: bool = True
     permissions: dict[str, str]
     last_login_at: datetime | None = None
@@ -48,10 +82,10 @@ class UserCreateRequest(BaseModel):
     username: str = Field(..., min_length=3, max_length=80)
     email: str = Field(..., min_length=5, max_length=160)
     full_name: str = Field(..., min_length=3, max_length=180)
-    role_code: str = Field(..., description="ADMIN | ADMISSION | DOCTOR | PSYCHOLOGIST | COUNSELOR | SOCIAL_WORKER")
+    role_code: str = Field(..., description="ADMIN | DOCTOR | PSYCHIATRIST | PSYCHOLOGIST | COUNSELOR | NUTRITIONIST")
     professional_license: str | None = None
     specialty: str | None = None
-    password: str = Field(..., min_length=8)
+    password: str = Field(..., min_length=4)
 
 
 class UserUpdateRequest(BaseModel):
@@ -60,7 +94,8 @@ class UserUpdateRequest(BaseModel):
     professional_license: str | None = None
     specialty: str | None = None
     is_active: bool | None = None
-    password: str | None = Field(default=None, min_length=8)
+    approval_status: str | None = None
+    password: str | None = Field(default=None, min_length=4)
 
 
 # =============================================================================
@@ -127,15 +162,8 @@ class PatientSummary(BaseModel):
 
 
 # =============================================================================
-# MÓDULO 1: ADMISIÓN, CONSENTIMIENTO E INVENTARIO
+# MÓDULOS CLÍNICOS (CON FIRMAS DIGITALES / BIOMÉTRICAS)
 # =============================================================================
-class BelongingItem(BaseModel):
-    item: str
-    quantity: int = 1
-    condition: str = "Bueno"
-    notes: str | None = None
-
-
 class AdmissionUpdate(BaseModel):
     admission_type: str = "VOLUNTARIO"
     referral_source: str | None = None
@@ -149,11 +177,9 @@ class AdmissionUpdate(BaseModel):
     consent_signature_data: str | None = None
     belongings_inventory_json: list[dict[str, Any]] | None = None
     belongings_notes: str | None = None
+    signatures_json: dict[str, Any] | None = None
 
 
-# =============================================================================
-# MÓDULO 2: ÁREA MÉDICA Y SIGNOS VITALES
-# =============================================================================
 class MedicalRecordUpdate(BaseModel):
     blood_type: str | None = None
     allergies: str | None = None
@@ -165,6 +191,7 @@ class MedicalRecordUpdate(BaseModel):
     detox_protocol: str | None = None
     prescriptions_json: list[dict[str, Any]] | None = None
     medical_alerts: str | None = None
+    signatures_json: dict[str, Any] | None = None
 
 
 class VitalSignCreate(BaseModel):
@@ -178,9 +205,6 @@ class VitalSignCreate(BaseModel):
     observations: str | None = None
 
 
-# =============================================================================
-# MÓDULO 3: PSICOLOGÍA Y PSIQUIATRÍA
-# =============================================================================
 class PsychologicalRecordUpdate(BaseModel):
     anamnesis: str | None = None
     life_history: str | None = None
@@ -192,17 +216,16 @@ class PsychologicalRecordUpdate(BaseModel):
     risk_level: str = "BAJO"
     treatment_plan: str | None = None
     therapeutic_goals_json: list[dict[str, Any]] | None = None
+    signatures_json: dict[str, Any] | None = None
 
 
-# =============================================================================
-# MÓDULO 4: CONSEJERÍA Y MENTORÍA (12 PASOS)
-# =============================================================================
 class CounselingRecordUpdate(BaseModel):
     current_step: int = Field(default=1, ge=1, le=12)
     steps_progress_json: list[dict[str, Any]] | None = None
     mentor_name: str | None = None
     counselor_notes: str | None = None
     sessions_log_json: list[dict[str, Any]] | None = None
+    signatures_json: dict[str, Any] | None = None
 
 
 class CounselingSessionCreate(BaseModel):
@@ -213,9 +236,6 @@ class CounselingSessionCreate(BaseModel):
     agreements: str | None = None
 
 
-# =============================================================================
-# MÓDULO 5: NOTAS DE EVOLUCIÓN SOAP & ASISTENTE IA GEMINI
-# =============================================================================
 class SoapNoteCreate(BaseModel):
     patient_id: int
     note_category: str = "EVOLUCION_CLINICA"
@@ -225,6 +245,7 @@ class SoapNoteCreate(BaseModel):
     plan: str = Field(..., min_length=3)
     raw_dictation: str | None = None
     ai_assisted: bool = False
+    signatures_json: dict[str, Any] | None = None
 
 
 class SoapAddendumCreate(BaseModel):
@@ -254,9 +275,6 @@ class AiSoapAssistResponse(BaseModel):
     suggested_soap: SuggestedSoapPayload
 
 
-# =============================================================================
-# MÓDULO 6: EGRESO / ALTA
-# =============================================================================
 class DischargeUpdate(BaseModel):
     discharge_type: str = "MEDICAL_THERAPEUTIC"
     discharge_date: datetime | None = None
@@ -267,11 +285,9 @@ class DischargeUpdate(BaseModel):
     triggers_identified: str | None = None
     support_commitments: str | None = None
     finalize_discharge: bool = False
+    signatures_json: dict[str, Any] | None = None
 
 
-# =============================================================================
-# MÓDULOS DE EXPANSIÓN
-# =============================================================================
 class SocialWorkUpdate(BaseModel):
     socioeconomic_level: str | None = None
     housing_conditions: str | None = None
@@ -279,6 +295,7 @@ class SocialWorkUpdate(BaseModel):
     support_network_score: int | None = Field(default=None, ge=1, le=10)
     family_visits_json: list[dict[str, Any]] | None = None
     observations: str | None = None
+    signatures_json: dict[str, Any] | None = None
 
 
 class LabScreeningCreate(BaseModel):

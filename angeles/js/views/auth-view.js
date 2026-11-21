@@ -7,59 +7,44 @@
  * @copyright   Todos los derechos reservados © 2026 César Augusto Bravo Hernández
  */
 
-import { apiRequest, esc, setSession, showToast } from "../api.js";
-
-const BETA_ROLES = [
-  { label: "Administrador (César Bravo)", user: "cesarbraher" },
-  { label: "Médico (Dra. Mendoza)", user: "dr.mendoza" },
-  { label: "Psicología (Mtro. Navarro)", user: "psi.navarro" },
-  { label: "Consejería 12 Pasos (Luis R.)", user: "con.ramirez" },
-  { label: "Admisión (Lic. Torres)", user: "adm.torres" },
-  { label: "Trabajo Social (Lic. Delgado)", user: "ts.delgado" },
-];
+import { apiRequest, setSession, showToast } from "../api.js";
 
 export function renderLoginView(container, onLoginSuccess) {
   container.innerHTML = `
     <div class="auth-wrap">
       <div class="card card-elevated">
-        <div style="text-align:center;margin-bottom:20px;">
-          <img src="/angeles/assets/icons/icon-192x192.png" alt="ÁNGELES" width="58" height="58" style="border-radius:14px;margin-bottom:10px;" />
-          <h1 style="font-size:1.45rem;margin-bottom:4px;color:var(--blue-950);">Acceso al Personal Clínico</h1>
-          <p class="muted-sm">Autenticación segura JWT con auditoría de acceso y cierre por inactividad.</p>
+        <div style="text-align:center;margin-bottom:22px;">
+          <img src="/angeles/assets/icons/icon-192x192.png" alt="ÁNGELES" width="60" height="60" style="border-radius:14px;margin-bottom:10px;" />
+          <h1 style="font-size:1.45rem;margin-bottom:4px;color:var(--blue-950);">Acceso al Sistema ÁNGELES</h1>
+          <p class="muted-sm">Ingreso para Dirección Master y profesionales clínicos autorizados.</p>
         </div>
 
         <form id="login-form" class="form-grid" style="grid-template-columns:1fr;">
           <div class="form-field">
-            <label for="login-identifier">Correo electrónico o usuario</label>
-            <input type="text" id="login-identifier" name="identifier" required autocomplete="username" placeholder="Ej. cesarbraher@gmail.com o dr.mendoza" />
+            <label for="login-identifier">Usuario o correo electrónico</label>
+            <input type="text" id="login-identifier" name="identifier" required autocomplete="username" placeholder="Ingresa tu usuario o correo" />
           </div>
 
           <div class="form-field">
             <label for="login-password">Contraseña</label>
-            <input type="password" id="login-password" name="password" required autocomplete="current-password" placeholder="••••••••••••" />
+            <input type="password" id="login-password" name="password" required autocomplete="current-password" placeholder="••••••••" />
           </div>
 
-          <div id="login-error" class="badge badge-red hidden" style="justify-content:center;padding:9px 12px;border-radius:10px;"></div>
+          <div id="login-error" class="badge badge-red hidden" style="justify-content:center;padding:10px 12px;border-radius:10px;text-align:center;"></div>
 
           <button type="submit" id="btn-login-submit" class="btn btn-primary" style="width:100%;">
-            Iniciar Sesión Segura
+            Iniciar Sesión
           </button>
         </form>
 
-        <details class="demo-accounts">
-          <summary style="cursor:pointer;font-size:0.84rem;font-weight:600;color:var(--blue-900);">
-            Cuentas piloto Fase Beta (para validar permisos RBAC por rol)
-          </summary>
-          <p class="muted-sm" style="margin-top:6px;">
-            Contraseña inicial beta: <code class="mono">Angeles2026!</code> — Haz clic en un perfil para rellenar:
+        <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--border-light);text-align:center;">
+          <p class="muted-sm" style="margin-bottom:10px;">
+            ¿Eres Consejero en Adicciones, Psicólogo, Médico, Psiquiatra o Nutriólogo?
           </p>
-          <div class="demo-role-grid">
-            ${BETA_ROLES.map(
-              (r) =>
-                `<button type="button" class="demo-role-btn" data-fill-user="${esc(r.user)}">${esc(r.label)}</button>`
-            ).join("")}
-          </div>
-        </details>
+          <a href="/angeles/registro" class="btn btn-secondary" style="width:100%;" data-link>
+            Registrarme como Profesional Clínico
+          </a>
+        </div>
       </div>
     </div>
   `;
@@ -70,19 +55,11 @@ export function renderLoginView(container, onLoginSuccess) {
   const errBox = document.getElementById("login-error");
   const submitBtn = document.getElementById("btn-login-submit");
 
-  container.querySelectorAll("[data-fill-user]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      idInput.value = btn.getAttribute("data-fill-user");
-      pwInput.value = "Angeles2026!";
-      idInput.focus();
-    });
-  });
-
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     errBox.classList.add("hidden");
     submitBtn.disabled = true;
-    submitBtn.textContent = "Verificando credenciales...";
+    submitBtn.textContent = "Verificando acceso...";
 
     try {
       const data = await apiRequest("/api/v1/auth/login", {
@@ -100,7 +77,7 @@ export function renderLoginView(container, onLoginSuccess) {
       errBox.classList.remove("hidden");
     } finally {
       submitBtn.disabled = false;
-      submitBtn.textContent = "Iniciar Sesión Segura";
+      submitBtn.textContent = "Iniciar Sesión";
     }
   });
 }

@@ -25,21 +25,21 @@ RBAC_MATRIX: dict[str, dict[str, str]] = {
         "expansion": "full",
         "admin": "full",
     },
-    "ADMISSION": {
-        "admission": "write",
-        "medical": "none",
-        "psychology": "none",
-        "counseling": "none",
-        "soap": "none",
-        "discharge": "read",
-        "expansion": "read",
-        "admin": "none",
-    },
     "DOCTOR": {
         "admission": "read",
         "medical": "write",
         "psychology": "read",
         "counseling": "none",
+        "soap": "write",
+        "discharge": "write",
+        "expansion": "write",
+        "admin": "none",
+    },
+    "PSYCHIATRIST": {
+        "admission": "read",
+        "medical": "write",
+        "psychology": "write",
+        "counseling": "read",
         "soap": "write",
         "discharge": "write",
         "expansion": "write",
@@ -65,6 +65,26 @@ RBAC_MATRIX: dict[str, dict[str, str]] = {
         "expansion": "none",
         "admin": "none",
     },
+    "NUTRITIONIST": {
+        "admission": "read",
+        "medical": "write",
+        "psychology": "none",
+        "counseling": "none",
+        "soap": "write",
+        "discharge": "read",
+        "expansion": "write",
+        "admin": "none",
+    },
+    "ADMISSION": {
+        "admission": "write",
+        "medical": "none",
+        "psychology": "none",
+        "counseling": "none",
+        "soap": "none",
+        "discharge": "read",
+        "expansion": "read",
+        "admin": "none",
+    },
     "SOCIAL_WORKER": {
         "admission": "read",
         "medical": "none",
@@ -76,6 +96,9 @@ RBAC_MATRIX: dict[str, dict[str, str]] = {
         "admin": "none",
     },
 }
+
+# Profesionales habilitados para registro público sujeto a autorización del Master
+REGISTERABLE_ROLES = {"COUNSELOR", "PSYCHOLOGIST", "DOCTOR", "PSYCHIATRIST", "NUTRITIONIST"}
 
 ACCESS_RANK = {"none": 0, "read": 1, "write": 2, "full": 3}
 

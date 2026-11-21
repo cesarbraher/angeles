@@ -86,6 +86,8 @@ def upsert_admission(
     if payload.belongings_inventory_json is not None:
         admission.belongings_inventory_json = payload.belongings_inventory_json
     admission.belongings_notes = payload.belongings_notes
+    if payload.signatures_json is not None:
+        admission.signatures_json = payload.signatures_json
     admission.updated_by_user_id = current_user.id
 
     if payload.consent_signature_data:
@@ -262,6 +264,8 @@ def upsert_counseling_record(
         record.counselor_notes = payload.counselor_notes
     if payload.sessions_log_json is not None:
         record.sessions_log_json = payload.sessions_log_json
+    if payload.signatures_json is not None:
+        record.signatures_json = payload.signatures_json
     record.counselor_user_id = current_user.id
 
     db.commit()
@@ -392,6 +396,7 @@ def create_soap_note(
         author_role=role_code,
         professional_license=current_user.professional_license,
         digital_signature_hash=sig_hash,
+        signatures_json=payload.signatures_json,
         signed_at=signed_at,
         created_at=signed_at,
     )
@@ -545,6 +550,8 @@ def upsert_discharge(
     discharge.relapse_prevention_plan = payload.relapse_prevention_plan
     discharge.triggers_identified = payload.triggers_identified
     discharge.support_commitments = payload.support_commitments
+    if payload.signatures_json is not None:
+        discharge.signatures_json = payload.signatures_json
     discharge.authorized_by_user_id = current_user.id
     discharge.digital_signature_hash = build_digital_signature_hash(
         {

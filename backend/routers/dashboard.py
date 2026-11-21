@@ -63,6 +63,11 @@ def dashboard_summary(
         )
         .count()
     )
+    pending_professionals = (
+        db.query(User)
+        .filter(User.institution_id == inst_id, User.approval_status == "PENDING")
+        .count()
+    )
 
     recent_activity = (
         db.query(AuditLog)
@@ -88,6 +93,7 @@ def dashboard_summary(
             "discharged_total": discharged_patients,
             "soap_notes_7d": recent_soap_count,
             "upcoming_followups": upcoming_followups,
+            "pending_professionals": pending_professionals,
         },
         "alerts": [
             {

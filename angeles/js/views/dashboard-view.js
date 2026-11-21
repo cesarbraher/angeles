@@ -26,10 +26,23 @@ export async function renderDashboardView(container, navigate) {
           <p class="muted-sm">${esc(user.institution_name)} · Sesión activa como <strong>${esc(user.full_name)}</strong> (${esc(user.role_name)})</p>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          ${canAccess(user, "admin", "full") ? `<a href="/angeles/administracion" class="btn ${m.pending_professionals > 0 ? "btn-gold" : "btn-secondary"}" data-link>Autorizar Profesionales (${m.pending_professionals || 0})</a>` : ""}
           ${canCreate ? `<a href="/angeles/expedientes/nuevo" class="btn btn-primary" data-link>+ Nuevo Ingreso</a>` : ""}
           <a href="/angeles/expedientes" class="btn btn-secondary" data-link>Ver Expedientes</a>
         </div>
       </div>
+
+      ${
+        canAccess(user, "admin", "full") && (m.pending_professionals || 0) > 0
+          ? `<div class="card" style="margin-bottom:18px;background:var(--gold-100);border-color:#E7C884;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+               <div>
+                 <strong style="color:var(--gold-600);">Tienes ${m.pending_professionals} solicitud(es) de registro profesional esperando tu autorización</strong>
+                 <div class="muted-sm">Revisa los datos y documentos adjuntos (imágenes/PDFs) para habilitar su acceso al sistema.</div>
+               </div>
+               <a href="/angeles/administracion" class="btn btn-primary btn-sm" data-link>Revisar y Autorizar →</a>
+             </div>`
+          : ""
+      }
 
       <section class="grid-4" style="margin-bottom:22px;">
         <div class="kpi-card">

@@ -27,6 +27,7 @@ import { renderDashboardView } from "./views/dashboard-view.js";
 import { renderExpansionView } from "./views/expansion-view.js";
 import { renderNewPatientView, renderPatientsListView } from "./views/patients-view.js";
 import { renderLandingView, renderNosotrosView, renderServiciosView } from "./views/public-views.js";
+import { renderProfessionalRegisterView } from "./views/register-view.js";
 
 const BASE_PATH = "/angeles";
 
@@ -91,10 +92,11 @@ function renderChrome() {
   if (!user) {
     topNav.innerHTML = `
       <a href="/angeles/" class="${subPath === "/" ? "active" : ""}" data-link>Inicio</a>
-      <a href="/angeles/servicios" class="${subPath === "/servicios" ? "active" : ""}" data-link>Servicios</a>
+      <a href="/angeles/registro" class="${subPath === "/registro" ? "active" : ""}" data-link>Registro Profesional</a>
+      <a href="/angeles/servicios" class="${subPath === "/servicios" ? "active" : ""}" data-link>Metodología</a>
       <a href="/angeles/nosotros" class="${subPath === "/nosotros" ? "active" : ""}" data-link>Nosotros</a>
     `;
-    topUser.innerHTML = `<a href="/angeles/login" class="btn btn-primary btn-sm" data-link>Acceso Personal</a>`;
+    topUser.innerHTML = `<a href="/angeles/login" class="btn btn-primary btn-sm" data-link>Iniciar Sesión</a>`;
     sidebar.classList.add("hidden");
     return;
   }
@@ -103,10 +105,10 @@ function renderChrome() {
     <a href="/angeles/dashboard" class="${subPath === "/dashboard" ? "active" : ""}" data-link>Panel</a>
     <a href="/angeles/expedientes" class="${subPath.startsWith("/expedientes") ? "active" : ""}" data-link>Expedientes</a>
     ${canAccess(user, "expansion", "read") ? `<a href="/angeles/modulos-expansion" class="${subPath === "/modulos-expansion" ? "active" : ""}" data-link>Expansión</a>` : ""}
-    ${canAccess(user, "admin", "full") ? `<a href="/angeles/administracion" class="${subPath === "/administracion" ? "active" : ""}" data-link>Admin</a>` : ""}
+    ${canAccess(user, "admin", "full") ? `<a href="/angeles/administracion" class="${subPath === "/administracion" ? "active" : ""}" data-link>Autorizaciones</a>` : ""}
   `;
 
-  const initials = (user.full_name || "U")
+  const initials = (user.full_name || "A")
     .split(" ")
     .slice(0, 2)
     .map((w) => w[0])
@@ -116,7 +118,7 @@ function renderChrome() {
   topUser.innerHTML = `
     <div class="user-pill" title="${esc(user.full_name)} — ${esc(user.role_name)}">
       <span class="user-avatar">${esc(initials)}</span>
-      <span class="user-name-label" style="font-weight:600;">${esc(user.role_code)}</span>
+      <span class="user-name-label" style="font-weight:600;">${esc(user.role_code === "ADMIN" ? "MASTER" : user.role_name)}</span>
     </div>
     <button type="button" id="btn-logout" class="btn btn-ghost btn-sm" title="Cerrar sesión">Salir</button>
   `;
@@ -147,19 +149,17 @@ function renderChrome() {
 
       ${
         canAccess(user, "admin", "full")
-          ? `<div class="sidebar-group-title" style="margin-top:12px;">Gobernanza</div>
+          ? `<div class="sidebar-group-title" style="margin-top:12px;">Control Master</div>
              <nav class="sidebar-nav">
-               <a href="/angeles/administracion" class="sidebar-link ${subPath === "/administracion" ? "active" : ""}" data-link>Usuarios, RBAC y Auditoría</a>
+               <a href="/angeles/administracion" class="sidebar-link ${subPath === "/administracion" ? "active" : ""}" data-link>Autorizar Profesionales y Auditoría</a>
              </nav>`
           : ""
       }
 
       <div class="sidebar-group-title" style="margin-top:12px;">Institución</div>
       <nav class="sidebar-nav">
-        <a href="/angeles/servicios" class="sidebar-link ${subPath === "/servicios" ? "active" : ""}" data-link>Metodología SOAP</a>
-        <a href="/angeles/nosotros" class="sidebar-link ${subPath === "/nosotros" ? "active" : ""}" data-link>Acerca del Sistema</a>
-        <a href="/" class="sidebar-link">← Fundación Braher</a>
-        <a href="/docs" class="sidebar-link" target="_blank" rel="noopener noreferrer">API Docs (OpenAPI)</a>
+        <a href="/angeles/servicios" class="sidebar-link ${subPath === "/servicios" ? "active" : ""}" data-link>Metodología Clínica</a>
+        <a href="/angeles/nosotros" class="sidebar-link ${subPath === "/nosotros" ? "active" : ""}" data-link>Ángeles de Esperanza</a>
       </nav>
     </div>
 
@@ -188,6 +188,10 @@ async function renderRoute() {
   // Rutas públicas bajo /angeles/
   if (subPath === "/") {
     renderLandingView(main, navigate);
+    return;
+  }
+  if (subPath === "/registro") {
+    renderProfessionalRegisterView(main, navigate);
     return;
   }
   if (subPath === "/servicios") {

@@ -10,7 +10,7 @@
 import { getStoredUser } from "../api.js";
 import { triggerAppDownloadOrInstall } from "../pwa.js";
 
-export function renderLandingView(container, navigate) {
+export function renderLandingView(container) {
   const user = getStoredUser();
 
   container.innerHTML = `
@@ -19,32 +19,30 @@ export function renderLandingView(container, navigate) {
         <div class="hero-eyebrow">Ángeles de Esperanza A.C. · Irapuato, Guanajuato</div>
         <h1 class="hero-title">Expediente Clínico Electrónico con claridad humana y trazabilidad integral.</h1>
         <p class="hero-lead">
-          <strong>ÁNGELES</strong> centraliza el acompañamiento médico, psicológico, consejería de 12 Pasos, notas diarias SOAP asistidas por IA y seguimiento post-egreso en una aplicación web instalable desde cualquier dispositivo.
+          <strong>ÁNGELES</strong> centraliza el acompañamiento médico, psiquiátrico, psicológico, nutricional, consejería en adicciones de 12 Pasos y notas diarias SOAP con firma digital, biometría e impresión presencial.
         </p>
 
         <div class="hero-cta">
           <a href="${user ? "/angeles/dashboard" : "/angeles/login"}" class="btn btn-primary" data-link>
-            ${user ? "Ir al Panel Clínico" : "Acceso al Personal Clínico"}
+            ${user ? "Ir al Panel Clínico" : "Acceso al Sistema"}
           </a>
+          ${!user ? `<a href="/angeles/registro" class="btn btn-secondary" data-link>Registro de Profesionales</a>` : ""}
           <button type="button" id="hero-btn-install" class="btn btn-download-app">
             Descargar e Instalar App
           </button>
-          <a href="/angeles/servicios" class="btn btn-secondary" data-link>
-            Conocer Metodología
-          </a>
         </div>
 
-        <blockquote class="hero-quote">
-          <p>“Toda gran obra comienza siendo invisible. Mi labor consiste en darle forma.”</p>
-          <cite>— César Augusto Bravo Hernández · CESAR A. BRAVO - DevRel @Google</cite>
-        </blockquote>
+        <div class="card" style="padding:14px 18px;background:var(--blue-50);border-color:#CBE0F2;">
+          <strong style="font-size:0.88rem;color:var(--blue-950);display:block;margin-bottom:4px;">Especialistas habilitados para registro y expediente clínico:</strong>
+          <span class="muted-sm">Consejeros en Adicciones · Psicólogos · Médicos · Psiquiatras · Nutriólogos</span>
+        </div>
       </div>
 
       <div class="hero-visual">
-        <img src="/angeles/assets/hero-courtyard.jpg" alt="Patio sereno y luminoso de acompañamiento humano en Ángeles de Esperanza A.C." />
+        <img src="/angeles/assets/hero-courtyard.jpg" alt="Espacio sereno de acompañamiento humano en Ángeles de Esperanza A.C." />
         <div class="hero-visual-caption">
-          <span><strong>Fase Beta 1.0</strong> · Arquitectura PWA Instalable + MySQL / FastAPI</span>
-          <span class="badge badge-green">HTTPS & Offline Ready</span>
+          <span><strong>ÁNGELES</strong> · Plataforma Clínica Multidisciplinaria Instalable</span>
+          <span class="badge badge-green">Firma Digital & Imprimible</span>
         </div>
       </div>
     </section>
@@ -52,18 +50,18 @@ export function renderLandingView(container, navigate) {
     <section class="section-block">
       <div class="section-head">
         <h2>Los 6 Módulos del Expediente Clínico Digital</h2>
-        <p>Flujo multidisciplinario completo con permisos estrictos por rol profesional (RBAC) y firma electrónica SHA-256.</p>
+        <p>Flujo multidisciplinario completo con permisos por especialidad, firmas digitales del profesional, usuario y familia, y versión imprimible para firma presencial.</p>
       </div>
       <div class="grid-3">
         <article class="card">
           <span class="badge badge-blue" style="margin-bottom:10px;">Módulo 1</span>
           <h3 class="card-title">Admisión e Ingreso</h3>
-          <p class="muted-sm" style="margin-top:8px;">Ficha de identificación completa, consentimiento informado digital con pad de firma táctil capacitiva y resguardo de pertenencias.</p>
+          <p class="muted-sm" style="margin-top:8px;">Ficha de identificación completa, consentimiento informado con firma digital y biométrica, e inventario de pertenencias.</p>
         </article>
         <article class="card">
           <span class="badge badge-green" style="margin-bottom:10px;">Módulo 2</span>
-          <h3 class="card-title">Área Médica</h3>
-          <p class="muted-sm" style="margin-top:8px;">Historia clínica general, alergias, monitoreo continuo de signos vitales (TA, FC, FR, Temp, SpO2, Glucosa), recetas y desintoxicación.</p>
+          <h3 class="card-title">Área Médica y Nutrición</h3>
+          <p class="muted-sm" style="margin-top:8px;">Historia clínica general, alergias, signos vitales continuos (TA, FC, FR, Temp, SpO2, Glucosa), recetas, nutrición y desintoxicación.</p>
         </article>
         <article class="card">
           <span class="badge badge-blue" style="margin-bottom:10px;">Módulo 3</span>
@@ -72,18 +70,18 @@ export function renderLandingView(container, navigate) {
         </article>
         <article class="card">
           <span class="badge badge-gold" style="margin-bottom:10px;">Módulo 4</span>
-          <h3 class="card-title">Consejería y 12 Pasos</h3>
+          <h3 class="card-title">Consejería en Adicciones</h3>
           <p class="muted-sm" style="margin-top:8px;">Seguimiento estructurado paso a paso del Programa de 12 Pasos y bitácora de sesiones individuales, grupales y mentoría.</p>
         </article>
         <article class="card">
-          <span class="badge badge-green" style="margin-bottom:10px;">Módulo 5 · IA Gemini</span>
+          <span class="badge badge-green" style="margin-bottom:10px;">Módulo 5 · SOAP</span>
           <h3 class="card-title">Notas de Evolución SOAP</h3>
-          <p class="muted-sm" style="margin-top:8px;">Bitácora inmutable firmada con SHA-256 y asistente de dictado clínico con Google Gemini (borrador siempre editable por el profesional).</p>
+          <p class="muted-sm" style="margin-top:8px;">Bitácora inmutable firmada digitalmente (SHA-256) con dictado asistido por IA editable y soporte de notas aclaratorias.</p>
         </article>
         <article class="card">
           <span class="badge badge-blue" style="margin-bottom:10px;">Módulo 6 + Expansión</span>
           <h3 class="card-title">Egreso y Seguimiento</h3>
-          <p class="muted-sm" style="margin-top:8px;">Dictamen de alta, devolución de pertenencias, plan de prevención de recaídas, trabajo social, toxicología y llamadas a 1, 3, 6 y 12 meses.</p>
+          <p class="muted-sm" style="margin-top:8px;">Dictamen de alta, devolución de pertenencias, plan de prevención de recaídas, trabajo social, toxicología y seguimiento post-egreso.</p>
         </article>
       </div>
     </section>
@@ -97,36 +95,36 @@ export function renderServiciosView(container) {
     <section>
       <div class="section-head">
         <span class="badge badge-blue" style="margin-bottom:10px;">Metodología y Cumplimiento Normativo</span>
-        <h1>Alcance Clínico y Arquitectura de Trazabilidad</h1>
-        <p>Diseñado bajo estándares de seguridad clínica, confidencialidad multidisciplinaria y continuidad operativa en campo.</p>
+        <h1>Alcance Clínico y Trazabilidad Documental</h1>
+        <p>Diseñado bajo estándares de confidencialidad multidisciplinaria, validez documental y continuidad operativa.</p>
       </div>
 
       <div class="grid-2">
         <div class="card">
-          <h2 class="card-title">Metodología SOAP Inmutable + Adendas</h2>
+          <h2 class="card-title">Firma Digital, Biometría e Impresión Presencial</h2>
           <p style="color:var(--text-secondary);font-size:0.93rem;">
-            Cada nota diaria se estructura en <strong>Subjetivo (S)</strong>, <strong>Objetivo (O)</strong>, <strong>Análisis (A)</strong> y <strong>Plan (P)</strong>. Al firmarse genera un sello criptográfico <code>SHA-256</code> vinculado a la cédula profesional del autor y la marca temporal exacta. Ningún registro firmado puede eliminarse; las precisiones posteriores se adjuntan como <em>Nota Aclaratoria / Adenda</em>.
+            Cada formato clínico incorpora al pie el nombre y firma digital del profesional responsable, así como la firma del usuario y del familiar responsable cuando corresponda, con verificación biométrica (WebAuthn / huella / Face ID) y sello SHA-256. Una vez firmado, cualquier formato puede imprimirse con líneas limpias para firma presencial.
           </p>
         </div>
 
         <div class="card">
-          <h2 class="card-title">Asistente Clínico con Google Gemini</h2>
+          <h2 class="card-title">Registro y Validación de Especialistas</h2>
           <p style="color:var(--text-secondary);font-size:0.93rem;">
-            El personal clínico puede escribir o dictar por voz observaciones en lenguaje natural y estructurarlas en segundos en un borrador SOAP mediante el endpoint <code>/api/v1/ai/assist-soap</code>. Por regla estricta de seguridad, la IA nunca diagnostica ni guarda automáticamente: el profesional siempre revisa y firma.
+            Consejeros en Adicciones, Psicólogos, Médicos, Psiquiatras y Nutriólogos pueden inscribirse en línea adjuntando sus documentos probatorios en imagen o PDF. El acceso al sistema se habilita únicamente tras la revisión y autorización de la administración.
           </p>
         </div>
 
         <div class="card">
-          <h2 class="card-title">Control de Acceso Basado en Roles (RBAC)</h2>
+          <h2 class="card-title">Metodología SOAP Inmutable y Adendas</h2>
           <p style="color:var(--text-secondary);font-size:0.93rem;">
-            Seis perfiles diferenciados (Admisión, Médico, Psicólogo/Psiquiatra, Consejero, Trabajo Social y Administrador) validados tanto en el backend FastAPI como en la interfaz, respaldados por la tabla inmutable <code>audit_logs</code>.
+            Las notas diarias se registran en formato <strong>Subjetivo, Objetivo, Análisis y Plan (SOAP)</strong> con sello criptográfico vinculado a la cédula profesional. Ninguna nota firmada se borra; las aclaraciones posteriores se agregan como Adenda vinculada.
           </p>
         </div>
 
         <div class="card">
-          <h2 class="card-title">Progressive Web App (PWA) Instalable</h2>
+          <h2 class="card-title">Aplicación Web Instalable (PWA)</h2>
           <p style="color:var(--text-secondary);font-size:0.93rem;">
-            Instalable directamente desde el navegador en Android, iOS, Windows, macOS y Linux sin tiendas intermedias. Service Worker con estrategia <em>Network-First</em> para expedientes y <em>Cache-First</em> para la interfaz, protegiendo borradores locales si se pierde señal.
+            Instalable directamente desde el navegador en teléfonos Android, iPhone/iPad y computadoras sin pasar por tiendas intermedias, conservando borradores locales ante interrupciones temporales de señal.
           </p>
         </div>
       </div>
@@ -138,37 +136,32 @@ export function renderNosotrosView(container) {
   container.innerHTML = `
     <section>
       <div class="section-head">
-        <span class="badge badge-gold" style="margin-bottom:10px;">Acerca del Sistema e Institución</span>
-        <h1>Ángeles de Esperanza A.C. & Proyecto ÁNGELES</h1>
-        <p>Tecnología humanizada al servicio de la rehabilitación integral y el acompañamiento familiar en Irapuato, Guanajuato.</p>
+        <span class="badge badge-gold" style="margin-bottom:10px;">Institución</span>
+        <h1>Ángeles de Esperanza A.C.</h1>
+        <p>Centro de Rehabilitación en Adicciones comprometido con la atención clínica digna, ética y multidisciplinaria en Irapuato, Guanajuato.</p>
       </div>
 
       <div class="grid-2">
         <div class="card card-elevated">
-          <h2 class="card-title">Institución Piloto</h2>
+          <h2 class="card-title">Nuestra Institución</h2>
           <p style="color:var(--text-secondary);margin-top:10px;">
             <strong>Centro de Rehabilitación en Adicciones “ÁNGELES DE ESPERANZA A.C.”</strong><br/>
             Ubicación: Irapuato, Guanajuato, México.<br/>
-            Portal institucional: <a href="https://angelesdeesperanzaac.org" target="_blank" rel="noopener noreferrer">angelesdeesperanzaac.org</a><br/>
-            Directorio clínico: <a href="https://cebraher.org/angeles" target="_blank" rel="noopener noreferrer">cebraher.org/angeles</a> (<a href="/">Fundación Braher</a>)
+            Sitio web institucional: <a href="https://angelesdeesperanzaac.org" target="_blank" rel="noopener noreferrer">angelesdeesperanzaac.org</a>
           </p>
           <p class="muted-sm">
-            Arquitectura multi-tenant preparada desde su base de datos (<code>institution_id</code>) para acompañar el crecimiento futuro de nuevos centros y redes de rehabilitación.
+            Brindamos acompañamiento integral en medicina, psiquiatría, psicología, nutrición, consejería en adicciones y fortalecimiento familiar.
           </p>
         </div>
 
         <div class="card card-elevated">
-          <h2 class="card-title">Autoría y Arquitectura de Software</h2>
+          <h2 class="card-title">Integración de Especialistas</h2>
           <p style="color:var(--text-secondary);margin-top:10px;">
-            Desarrollado por <strong>César Augusto Bravo Hernández</strong><br/>
-            Firma Profesional: <strong>CESAR A. BRAVO - DevRel @Google</strong><br/>
-            Sitio Web Oficial: <a href="https://cebraher.com" target="_blank" rel="noopener noreferrer">https://cebraher.com</a><br/>
-            Contacto: <a href="mailto:cesarbraher@gmail.com">cesarbraher@gmail.com</a>
+            ¿Formas parte del equipo multidisciplinario como Consejero en Adicciones, Psicólogo, Médico, Psiquiatra o Nutriólogo?
           </p>
-          <blockquote class="hero-quote" style="margin-top:14px;">
-            <p>“Toda gran obra comienza siendo invisible. Mi labor consiste en darle forma.”</p>
-            <cite>— © 2026 César Augusto Bravo Hernández</cite>
-          </blockquote>
+          <div style="margin-top:14px;">
+            <a href="/angeles/registro" class="btn btn-primary" data-link>Ir al Registro de Profesionales</a>
+          </div>
         </div>
       </div>
     </section>

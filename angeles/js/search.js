@@ -11,9 +11,10 @@ import { apiRequest, esc, getStoredUser } from "./api.js";
 
 const PUBLIC_INDEX = [
   { title: "Portal Institucional ÁNGELES", subtitle: "Inicio y presentación del sistema EHR", route: "/angeles/", keywords: "inicio home portada angeles esperanza" },
+  { title: "Registro de Profesionales Clínicos", subtitle: "Consejeros, Psicólogos, Médicos, Psiquiatras y Nutriólogos", route: "/angeles/registro", keywords: "registro profesionales consejero psicologo medico psiquiatra nutriologo documentos pdf" },
   { title: "Alcance y Metodología Clínica", subtitle: "6 módulos EHR, SOAP, 12 Pasos, CIE-11 / DSM-5", route: "/angeles/servicios", keywords: "servicios metodologia soap 12 pasos cie dsm modulos" },
-  { title: "Acerca del Sistema e Institución", subtitle: "Ángeles de Esperanza A.C. y autoría técnica", route: "/angeles/nosotros", keywords: "nosotros institucion irapuato cesar bravo devrel google" },
-  { title: "Acceso al Personal Clínico", subtitle: "Iniciar sesión con JWT y control RBAC", route: "/angeles/login", keywords: "login acceso iniciar sesion personal medico psicologo" },
+  { title: "Ángeles de Esperanza A.C.", subtitle: "Información institucional", route: "/angeles/nosotros", keywords: "nosotros institucion irapuato angeles esperanza" },
+  { title: "Iniciar Sesión", subtitle: "Acceso para Master y profesionales autorizados", route: "/angeles/login", keywords: "login acceso iniciar sesion personal medico psicologo" },
   { title: "Descargar / Instalar App (PWA)", subtitle: "Instalar en Android, iOS, Windows, macOS o Linux", route: "#install", keywords: "descargar instalar app pwa android ios movil" },
 ];
 

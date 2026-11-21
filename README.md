@@ -102,12 +102,10 @@ uvicorn backend.main:app --reload --port 8000
 
 - **Landing Principal (FUNDACIÓN BRAHER):** `http://localhost:8000/`
 - **Sistema ÁNGELES (PWA):** `http://localhost:8000/angeles/`
+- **Registro de Profesionales:** `http://localhost:8000/angeles/registro`
 - **Documentación OpenAPI (Swagger):** `http://localhost:8000/docs`
-- **ReDoc:** `http://localhost:8000/redoc`
 
-> **Cuentas piloto Fase Beta (contraseña inicial: `Angeles2026!` — cambiar inmediatamente en producción):**
-> - Admin: `cesarbraher` (`cesarbraher@gmail.com`)
-> - Médico: `dr.mendoza` | Psicología: `psi.navarro` | Consejería: `con.ramirez` | Admisión: `adm.torres` | Trabajo Social: `ts.delgado`
+> **Acceso Master y Registro de Especialistas:** El sistema cuenta con la cuenta Master de administración (**ÁNGELES DE ESPERANZA**) para gestionar expedientes y autorizar los registros de Consejeros en Adicciones, Psicólogos, Médicos, Psiquiatras y Nutriólogos que se inscriban adjuntando sus documentos probatorios (imágenes o PDFs).
 
 ---
 

@@ -17,6 +17,7 @@ import {
   showToast,
 } from "../api.js";
 import { accessLabel, statusBadge } from "../rbac.js";
+import { mountFormatSignatureBlock } from "../signature-block.js";
 import { CapacitiveSignaturePad } from "../signature-pad.js";
 
 const MODULE_TABS = [
@@ -230,10 +231,12 @@ function renderModule1Admission(el, chart, reload) {
         </div>
       </div>
 
+      <div id="sig-block-mod1"></div>
+
       ${
         canWrite
           ? `<div style="display:flex;justify-content:flex-end;margin-top:18px;">
-              <button type="submit" class="btn btn-primary">Guardar Admisión, Firma e Inventario</button>
+              <button type="submit" class="btn btn-primary">Guardar Admisión, Firmas e Inventario</button>
             </div>`
           : ""
       }
@@ -311,10 +314,31 @@ function renderModule1Admission(el, chart, reload) {
     });
   });
 
+  const sigMod1 = mountFormatSignatureBlock(document.getElementById("sig-block-mod1"), {
+    prefix: "mod1",
+    patient: chart.patient,
+    existingSignatures: adm.signatures_json,
+    canWrite,
+    includeFamily: true,
+    formatTitle: "Módulo 1 — Admisión, Consentimiento Informado e Inventario",
+    getPrintRows: () => {
+      const fd = new FormData(document.getElementById("mod1-form"));
+      return [
+        { label: "Modalidad de Ingreso", value: fd.get("admission_type") },
+        { label: "Fuente de Referencia", value: fd.get("referral_source") },
+        { label: "Motivo Principal de Ingreso", value: fd.get("admission_reason") },
+        { label: "Familiar Responsable / Tutor", value: `${fd.get("guardian_name") || "—"} (${fd.get("guardian_relationship") || "—"}) · ID: ${fd.get("guardian_id_number") || "—"}` },
+        { label: "Consentimiento Informado", value: fd.get("consent_accepted") === "on" ? `Aceptado por ${fd.get("consent_signer_name") || "—"} (${fd.get("consent_signer_role")})` : "Pendiente" },
+        { label: "Inventario de Pertenencias", value: belongings.length ? belongings.map((b) => `• ${b.item} (x${b.quantity}) — ${b.condition}`).join("\n") : "Sin objetos registrados" },
+      ];
+    },
+  });
+
   if (canWrite) {
     document.getElementById("mod1-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
+      const signatures_json = await sigMod1.collectSignatures();
       const payload = {
         admission_type: fd.get("admission_type"),
         referral_source: fd.get("referral_source") || null,
@@ -328,13 +352,14 @@ function renderModule1Admission(el, chart, reload) {
         consent_signature_data: sigPad ? sigPad.toDataURL() : null,
         belongings_inventory_json: belongings,
         belongings_notes: fd.get("belongings_notes") || null,
+        signatures_json,
       };
       try {
         await apiRequest(`/api/v1/patients/${chart.patient.id}/admission`, {
           method: "PUT",
           body: JSON.stringify(payload),
         });
-        showToast("Módulo 1 (Admisión y Consentimiento) guardado con integridad SHA-256.", "success");
+        showToast("Módulo 1 guardado con firmas digitales y sello SHA-256.", "success");
         reload();
       } catch (err) {
         showToast(err.message, "error");
@@ -441,7 +466,9 @@ function renderModule2Medical(el, chart, reload) {
         <div id="rx-list"></div>
       </div>
 
-      ${canWrite ? `<div style="display:flex;justify-content:flex-end;margin-top:18px;"><button type="submit" class="btn btn-primary">Guardar Historia Médica y Recetas</button></div>` : ""}
+      <div id="sig-block-mod2"></div>
+
+      ${canWrite ? `<div style="display:flex;justify-content:flex-end;margin-top:18px;"><button type="submit" class="btn btn-primary">Guardar y Firmar Historia Médica</button></div>` : ""}
     </form>
   `;
 
@@ -548,10 +575,31 @@ function renderModule2Medical(el, chart, reload) {
     });
   });
 
+  const sigMod2 = mountFormatSignatureBlock(document.getElementById("sig-block-mod2"), {
+    prefix: "mod2",
+    patient: chart.patient,
+    existingSignatures: med.signatures_json,
+    canWrite,
+    includeFamily: true,
+    formatTitle: "Módulo 2 — Historia Clínica Médica, Nutrición y Recetas",
+    getPrintRows: () => {
+      const fd = new FormData(document.getElementById("mod2-form"));
+      return [
+        { label: "Tipo de Sangre / Alergias", value: `Tipo: ${fd.get("blood_type") || "—"} · Alergias: ${fd.get("allergies") || "Negadas"}` },
+        { label: "Antecedentes Patológicos", value: fd.get("pathological_history") },
+        { label: "Historia de Consumo", value: `${fd.get("primary_substance") || "—"} (${fd.get("years_of_use") || "—"} años) — ${fd.get("substance_use_history") || ""}` },
+        { label: "Examen Físico Inicial", value: fd.get("physical_exam_summary") },
+        { label: "Protocolo de Desintoxicación / Plan Médico-Nutricional", value: fd.get("detox_protocol") },
+        { label: "Recetas Activas", value: prescriptions.length ? prescriptions.map((r) => `• ${r.medication} ${r.dose} — ${r.frequency} (${r.route || "Oral"})`).join("\n") : "Sin medicamentos prescritos" },
+      ];
+    },
+  });
+
   if (canWrite) {
     document.getElementById("mod2-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
+      const signatures_json = await sigMod2.collectSignatures();
       const payload = {
         blood_type: fd.get("blood_type") || null,
         allergies: fd.get("allergies") || null,
@@ -563,13 +611,14 @@ function renderModule2Medical(el, chart, reload) {
         detox_protocol: fd.get("detox_protocol") || null,
         medical_alerts: fd.get("medical_alerts") || null,
         prescriptions_json: prescriptions,
+        signatures_json,
       };
       try {
         await apiRequest(`/api/v1/patients/${chart.patient.id}/medical`, {
           method: "PUT",
           body: JSON.stringify(payload),
         });
-        showToast("Módulo 2 (Área Médica) actualizado correctamente.", "success");
+        showToast("Módulo 2 guardado y firmado correctamente.", "success");
         reload();
       } catch (err) {
         showToast(err.message, "error");
@@ -646,7 +695,9 @@ function renderModule3Psychology(el, chart, reload) {
         <div id="psych-tests-list"></div>
       </div>
 
-      ${canWrite ? `<div style="display:flex;justify-content:flex-end;margin-top:18px;"><button type="submit" class="btn btn-primary">Guardar Evaluación Psicológica</button></div>` : ""}
+      <div id="sig-block-mod3"></div>
+
+      ${canWrite ? `<div style="display:flex;justify-content:flex-end;margin-top:18px;"><button type="submit" class="btn btn-primary">Guardar y Firmar Evaluación Psicológica / Psiquiátrica</button></div>` : ""}
     </form>
   `;
 
@@ -711,10 +762,32 @@ function renderModule3Psychology(el, chart, reload) {
     });
   });
 
+  const sigMod3 = mountFormatSignatureBlock(document.getElementById("sig-block-mod3"), {
+    prefix: "mod3",
+    patient: chart.patient,
+    existingSignatures: psy.signatures_json,
+    canWrite,
+    includeFamily: true,
+    formatTitle: "Módulo 3 — Evaluación Psicológica y Psiquiátrica (CIE-11 / DSM-5)",
+    getPrintRows: () => {
+      const fd = new FormData(document.getElementById("mod3-form"));
+      return [
+        { label: "Codificación Diagnóstica", value: `CIE-11: ${fd.get("cie11_code") || "—"} · DSM-5: ${fd.get("dsm5_code") || "—"} · Riesgo: ${fd.get("risk_level")}` },
+        { label: "Impresión Diagnóstica", value: fd.get("diagnosis_description") },
+        { label: "Anamnesis Psicológica", value: fd.get("anamnesis") },
+        { label: "Historia de Vida", value: fd.get("life_history") },
+        { label: "Examen del Estado Mental", value: fd.get("mental_status_exam") },
+        { label: "Plan Terapéutico Individualizado", value: fd.get("treatment_plan") },
+        { label: "Pruebas Psicométricas", value: tests.length ? tests.map((t) => `• ${t.test} (${t.date}): ${t.score} — ${t.interpretation}`).join("\n") : "Sin pruebas registradas" },
+      ];
+    },
+  });
+
   if (canWrite) {
     document.getElementById("mod3-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
+      const signatures_json = await sigMod3.collectSignatures();
       const payload = {
         cie11_code: fd.get("cie11_code") || null,
         dsm5_code: fd.get("dsm5_code") || null,
@@ -725,13 +798,14 @@ function renderModule3Psychology(el, chart, reload) {
         mental_status_exam: fd.get("mental_status_exam") || null,
         treatment_plan: fd.get("treatment_plan") || null,
         psychometric_tests_json: tests,
+        signatures_json,
       };
       try {
         await apiRequest(`/api/v1/patients/${chart.patient.id}/psychology`, {
           method: "PUT",
           body: JSON.stringify(payload),
         });
-        showToast("Módulo 3 (Psicología y Psiquiatría) guardado correctamente.", "success");
+        showToast("Módulo 3 guardado y firmado correctamente.", "success");
         reload();
       } catch (err) {
         showToast(err.message, "error");
@@ -786,7 +860,9 @@ function renderModule4Counseling(el, chart, reload) {
             <textarea name="counselor_notes" ${canWrite ? "" : "disabled"}>${esc(c.counselor_notes || "")}</textarea>
           </div>
         </div>
-        ${canWrite ? `<div style="display:flex;justify-content:flex-end;margin-top:14px;"><button type="submit" class="btn btn-primary">Guardar Avance de 12 Pasos</button></div>` : ""}
+        <div id="sig-block-mod4"></div>
+
+        ${canWrite ? `<div style="display:flex;justify-content:flex-end;margin-top:14px;"><button type="submit" class="btn btn-primary">Guardar y Firmar Avance de 12 Pasos</button></div>` : ""}
       </form>
     </div>
 
@@ -890,11 +966,30 @@ function renderModule4Counseling(el, chart, reload) {
     });
   });
 
+  const sigMod4 = mountFormatSignatureBlock(document.getElementById("sig-block-mod4"), {
+    prefix: "mod4",
+    patient: chart.patient,
+    existingSignatures: c.signatures_json,
+    canWrite,
+    includeFamily: true,
+    formatTitle: "Módulo 4 — Consejería en Adicciones y Programa de 12 Pasos",
+    getPrintRows: () => {
+      const fd = new FormData(document.getElementById("mod4-form"));
+      return [
+        { label: "Consejero / Mentor Asignado", value: fd.get("mentor_name") },
+        { label: "Paso Actual en el Programa de 12 Pasos", value: `Paso ${fd.get("current_step") || currentStep} de 12` },
+        { label: "Observaciones de Consejería", value: fd.get("counselor_notes") },
+        { label: "Sesiones Recientes", value: sessions.length ? sessions.slice(0, 5).map((s) => `• ${s.session_date} [${s.session_type}] Paso ${s.step_focus || "—"}: ${s.summary}`).join("\n") : "Sin sesiones registradas" },
+      ];
+    },
+  });
+
   if (canWrite) {
     document.getElementById("mod4-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
       const stepVal = Number(fd.get("current_step") || currentStep);
+      const signatures_json = await sigMod4.collectSignatures();
       const updatedSteps = steps.map((s) => ({
         ...s,
         status: s.step < stepVal ? "COMPLETADO" : s.step === stepVal ? "EN_PROCESO" : "PENDIENTE",
@@ -907,9 +1002,10 @@ function renderModule4Counseling(el, chart, reload) {
             steps_progress_json: updatedSteps,
             mentor_name: fd.get("mentor_name") || null,
             counselor_notes: fd.get("counselor_notes") || null,
+            signatures_json,
           }),
         });
-        showToast("Avance de Consejería (12 Pasos) guardado.", "success");
+        showToast("Avance de Consejería (12 Pasos) guardado y firmado.", "success");
         reload();
       } catch (err) {
         showToast(err.message, "error");
@@ -995,6 +1091,8 @@ function renderModule5Soap(el, chart, reload) {
             <textarea id="soap-p" name="plan" required>${esc(savedDraft.plan || "")}</textarea>
           </div>
         </div>
+
+        <div id="sig-block-mod5"></div>
 
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;flex-wrap:wrap;">
           <span class="muted-sm">Borrador respaldado localmente en este dispositivo ante pérdida de conexión.</span>
@@ -1124,10 +1222,26 @@ function renderModule5Soap(el, chart, reload) {
       }
     });
 
-    // Firmar Nota SOAP con SHA-256
+    const sigMod5 = mountFormatSignatureBlock(document.getElementById("sig-block-mod5"), {
+      prefix: "mod5",
+      patient: chart.patient,
+      existingSignatures: null,
+      canWrite,
+      includeFamily: true,
+      formatTitle: "Módulo 5 — Nota de Evolución Clínica (Formato SOAP)",
+      getPrintRows: () => [
+        { label: "S — Subjetivo", value: sEl.value.trim() },
+        { label: "O — Objetivo", value: oEl.value.trim() },
+        { label: "A — Análisis / Evaluación", value: aEl.value.trim() },
+        { label: "P — Plan e Indicaciones", value: pEl.value.trim() },
+      ],
+    });
+
+    // Firmar Nota SOAP con SHA-256 + Firmas Digitales / Biometría
     document.getElementById("soap-new-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
+      const signatures_json = await sigMod5.collectSignatures();
       try {
         const signed = await apiRequest("/api/v1/clinical/soap-notes", {
           method: "POST",
@@ -1140,6 +1254,7 @@ function renderModule5Soap(el, chart, reload) {
             plan: pEl.value.trim(),
             raw_dictation: rawEl.value.trim() || null,
             ai_assisted: aiUsed,
+            signatures_json,
           }),
         });
         localStorage.removeItem(draftKey);
@@ -1246,6 +1361,8 @@ function renderModule6Discharge(el, chart, reload) {
         </div>
       </div>
 
+      <div id="sig-block-mod6"></div>
+
       ${
         canWrite
           ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;flex-wrap:wrap;">
@@ -1253,17 +1370,38 @@ function renderModule6Discharge(el, chart, reload) {
                 <input type="checkbox" name="finalize_discharge" style="width:20px;height:20px;" />
                 Marcar expediente como EGRESADO / TRASLADADO al guardar
               </label>
-              <button type="submit" class="btn btn-primary">Guardar Dictamen de Egreso</button>
+              <button type="submit" class="btn btn-primary">Guardar y Firmar Dictamen de Egreso</button>
             </div>`
           : ""
       }
     </form>
   `;
 
+  const sigMod6 = mountFormatSignatureBlock(document.getElementById("sig-block-mod6"), {
+    prefix: "mod6",
+    patient: chart.patient,
+    existingSignatures: d.signatures_json,
+    canWrite,
+    includeFamily: true,
+    formatTitle: "Módulo 6 — Dictamen de Egreso / Alta y Plan de Prevención de Recaídas",
+    getPrintRows: () => {
+      const fd = new FormData(document.getElementById("mod6-form"));
+      return [
+        { label: "Tipo de Egreso / Alta", value: fd.get("discharge_type") },
+        { label: "Resumen Clínico de Egreso", value: fd.get("clinical_summary") },
+        { label: "Entrega de Pertenencias", value: `${fd.get("belongings_returned") === "on" ? "Entregado íntegramente" : "Pendiente"} — ${fd.get("belongings_return_notes") || ""}` },
+        { label: "Plan de Prevención de Recaídas", value: fd.get("relapse_prevention_plan") },
+        { label: "Detonantes Identificados", value: fd.get("triggers_identified") },
+        { label: "Compromisos de Red de Apoyo", value: fd.get("support_commitments") },
+      ];
+    },
+  });
+
   if (canWrite) {
     document.getElementById("mod6-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
+      const signatures_json = await sigMod6.collectSignatures();
       try {
         await apiRequest(`/api/v1/patients/${chart.patient.id}/discharge`, {
           method: "PUT",
@@ -1276,6 +1414,7 @@ function renderModule6Discharge(el, chart, reload) {
             triggers_identified: fd.get("triggers_identified") || null,
             support_commitments: fd.get("support_commitments") || null,
             finalize_discharge: fd.get("finalize_discharge") === "on",
+            signatures_json,
           }),
         });
         showToast("Dictamen de Egreso / Alta guardado y sellado.", "success");
