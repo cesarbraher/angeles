@@ -23,12 +23,12 @@
 
 ## Características Principales
 
-1. **Portal Raíz (`frontend/index.html`) + Directorio `/angeles` (`frontend/angeles/`):**
-   - La página principal en `/` (`cebraher.org`) presenta la landing minimalista **FUNDACIÓN BRAHER** con enlace directo a `/angeles/` (`braher.org/angeles`).
-   - Todo el sistema **ÁNGELES** opera íntegro bajo el directorio `/angeles/` (incluyendo `manifest.json`, `sw.js`, iconos, rutas SPA y módulos clínicos).
+1. **Portal Raíz (`index.html` en raíz = `public_html`) + Directorio `/angeles` (`angeles/`):**
+   - La página principal en `/` (`braher.org` / `cebraher.org`) está directamente en la raíz del repositorio (`index.html`) para despliegue inmediato en Hostinger sin error `403 Forbidden`, mostrando **FUNDACIÓN BRAHER** con enlace directo a `/angeles/`.
+   - Todo el sistema **ÁNGELES** opera íntegro bajo el directorio `/angeles/` (incluyendo `manifest.json`, `sw.js`, iconos, rutas SPA y modo híbrido compatible con FastAPI+MySQL o hosting estático con `.htaccess`).
 2. **Barra Superior Permanente con Buscador Global y Botón de Descarga de la App:**
    - **Buscador global** en tiempo real (`/api/v1/search`, atajo `/` o `Ctrl+K`) para localizar expedientes por nombre, folio (`ANG-2026-XXX`), CURP o módulos autorizados.
-   - **Botón directo “Descargar App”** en la barra superior (y menú lateral) que dispara la instalación nativa PWA (`beforeinstallprompt`), guía visual paso a paso para iOS Safari / Android / Escritorio, y descarga de acceso directo web (`/api/v1/app/launcher`).
+   - **Botón directo “Descargar App”** en la barra superior (y menú lateral) que dispara la instalación nativa PWA (`beforeinstallprompt`), guía visual paso a paso para iOS Safari / Android / Escritorio, y descarga directa de acceso directo `.html`.
 3. **Progressive Web App (PWA) Completa:**
    - `manifest.json` (`standalone`, `scope: "/angeles/"`, `#0F4C81`, `#F8FAFC`) con juego completo de iconos PNG (`72x72` hasta `512x512` + `apple-touch-icon.png`).
    - Service Worker (`/angeles/sw.js`) con estrategia **Network-First** para APIs clínicas, **Cache-First** para activos estáticos, pantalla `/angeles/offline.html` y respaldo local de borradores SOAP.
@@ -46,10 +46,20 @@
 
 ---
 
-## Estructura del Repositorio
+## Estructura del Repositorio (Compatible con Hostinger `public_html`)
 
 ```text
 angeles/
+├── .htaccess                          # Hostinger Apache/LiteSpeed: SPA /angeles/*, HTTPS, PWA, protección backend
+├── index.html                         # Landing principal en / ("FUNDACIÓN BRAHER" + enlace a /angeles/)
+├── angeles/                           # Directorio completo del sistema ÁNGELES (braher.org/angeles)
+│   ├── index.html                     # Shell PWA con barra superior (buscador + Descargar App)
+│   ├── manifest.json                  # Web App Manifest instalable (scope: /angeles/)
+│   ├── sw.js                          # Service Worker (Network-First API / Cache-First Shell)
+│   ├── offline.html                   # Respaldo sin conexión
+│   ├── assets/                        # Ilustración institucional + iconos PWA 72px..512px
+│   ├── css/styles.css                 # Sistema de diseño humanizado Mobile-First
+│   └── js/                            # Módulos ES6 (app, api, local-engine, pwa, search, rbac, signature-pad, views/*)
 ├── .env.example                       # Plantilla segura de variables de entorno
 ├── .gitignore                         # Protege .env, entornos virtuales y temporales
 ├── Dockerfile                         # Contenedor listo para VPS o Google Cloud Run
@@ -69,16 +79,6 @@ angeles/
 │   ├── ai_service.py                  # Asistente SOAP con Google Gemini (borrador seguro)
 │   ├── seed.py                        # Datos semilla institucionales idempotentes
 │   └── routers/                       # auth, dashboard, patients, clinical, expansion, admin
-├── frontend/
-│   ├── index.html                     # Landing principal en / ("FUNDACIÓN BRAHER" + enlace a /angeles/)
-│   └── angeles/                       # Directorio completo del sistema ÁNGELES
-│       ├── index.html                 # Shell PWA con barra superior (buscador + Descargar App)
-│       ├── manifest.json              # Web App Manifest instalable (scope: /angeles/)
-│       ├── sw.js                      # Service Worker (Network-First API / Cache-First Shell)
-│       ├── offline.html               # Respaldo sin conexión
-│       ├── assets/                    # Ilustración institucional + iconos PWA 72px..512px
-│       ├── css/styles.css             # Sistema de diseño humanizado Mobile-First
-│       └── js/                        # Módulos ES6 (app, api, pwa, search, rbac, signature-pad, views/*)
 ├── deploy/
 │   ├── nginx-cebraher.org.conf
 │   ├── angeles.service

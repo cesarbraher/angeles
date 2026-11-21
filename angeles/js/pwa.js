@@ -144,9 +144,9 @@ export function openInstallModal() {
           ? `<button type="button" id="btn-modal-native-install" class="btn btn-primary">Instalar Ahora en este Dispositivo</button>`
           : ""
       }
-      <a href="/api/v1/app/launcher" download="Angeles-App-AccesoDirecto.html" class="btn btn-download-app">
+      <button type="button" id="btn-download-launcher" class="btn btn-download-app">
         Descargar Acceso Directo (.html)
-      </a>
+      </button>
     </div>
 
     <div class="install-steps-list">
@@ -166,6 +166,21 @@ export function openInstallModal() {
       </div>
     </div>
   `;
+
+  document.getElementById("btn-download-launcher")?.addEventListener("click", () => {
+    const targetUrl = `${window.location.origin}/angeles/dashboard`;
+    const html = `<!DOCTYPE html><html lang="es-MX"><head><meta charset="UTF-8"/><meta http-equiv="refresh" content="0; url=${targetUrl}"/><title>Abrir ÁNGELES</title></head><body style="font-family:system-ui,sans-serif;text-align:center;padding:48px;"><h1>ÁNGELES — Ángeles de Esperanza A.C.</h1><p>Abriendo aplicación en <a href="${targetUrl}">${targetUrl}</a>...</p></body></html>`;
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Angeles-App-AccesoDirecto.html";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast("Acceso directo descargado correctamente.", "success");
+  });
 
   const nativeBtn = document.getElementById("btn-modal-native-install");
   if (nativeBtn && deferredPrompt) {

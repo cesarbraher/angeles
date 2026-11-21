@@ -7,8 +7,11 @@
  * @copyright   Todos los derechos reservados © 2026 César Augusto Bravo Hernández
  */
 
+import { handleLocalApi } from "./local-engine.js";
+
 const TOKEN_KEY = "angeles_jwt_token";
 const USER_KEY = "angeles_user_profile";
+let useLocalEngine = false;
 
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY);
@@ -34,8 +37,14 @@ export function clearSession() {
 }
 
 export async function apiRequest(path, options = {}) {
-  const headers = new Headers(options.headers || {});
   const token = getToken();
+
+  // Si ya se detectó alojamiento estático (ej. Hostinger public_html sin daemon Python) o token local
+  if (useLocalEngine || (token && token.startsWith("local-jwt-"))) {
+    return handleLocalApi(path, options, token);
+  }
+
+  const headers = new Headers(options.headers || {});
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
@@ -51,7 +60,15 @@ export async function apiRequest(path, options = {}) {
   }
 
   const contentType = response.headers.get("content-type") || "";
-  const data = contentType.includes("application/json") ? await response.json() : await response.text();
+  const isJson = contentType.includes("application/json");
+
+  // Si /api/v1/* devuelve 404/405 o HTML (servidor estático sin backend FastAPI), activar motor local PWA
+  if (path.startsWith("/api/v1/") && !isJson && (response.status === 404 || response.status === 405 || response.status === 403)) {
+    useLocalEngine = true;
+    return handleLocalApi(path, options, token);
+  }
+
+  const data = isJson ? await response.json() : await response.text();
 
   if (!response.ok) {
     if (response.status === 401 && path !== "/api/v1/auth/login") {

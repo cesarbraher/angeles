@@ -7,7 +7,7 @@
  * @copyright   Todos los derechos reservados © 2026 César Augusto Bravo Hernández
  */
 
-const CACHE_STATIC = "angeles-static-v1.1.0";
+const CACHE_STATIC = "angeles-static-v1.2.0";
 const SHELL_URL = "/angeles/";
 const OFFLINE_URL = "/angeles/offline.html";
 
@@ -18,6 +18,7 @@ const STATIC_ASSETS = [
   "/angeles/css/styles.css",
   "/angeles/js/app.js",
   "/angeles/js/api.js",
+  "/angeles/js/local-engine.js",
   "/angeles/js/pwa.js",
   "/angeles/js/rbac.js",
   "/angeles/js/search.js",

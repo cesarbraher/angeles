@@ -22,8 +22,8 @@ from backend.seed import seed_initial_data
 
 settings = get_settings()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FRONTEND_ROOT = os.path.join(BASE_DIR, "frontend")
-ANGELES_DIR = os.path.join(FRONTEND_ROOT, "angeles")
+FRONTEND_ROOT = BASE_DIR
+ANGELES_DIR = os.path.join(BASE_DIR, "angeles")
 
 
 @asynccontextmanager

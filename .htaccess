@@ -1,0 +1,57 @@
+# ==============================================================================
+# @project     ÁNGELES — Sistema Integral EHR & Gestión Clínica (PWA)
+# @institution Ángeles de Esperanza A.C. (Irapuato, Guanajuato)
+# @author      César Augusto Bravo Hernández
+# @role        CESAR A. BRAVO - DevRel @Google
+# @contact     cesarbraher@gmail.com | https://cebraher.com
+# @copyright   Todos los derechos reservados © 2026 César Augusto Bravo Hernández
+# ==============================================================================
+# Configuración Apache / LiteSpeed para Hostinger (braher.org / cebraher.org)
+
+DirectoryIndex index.html
+Options -Indexes
+
+# ------------------------------------------------------------------------------
+# 1. PROTECCIÓN DE ARCHIVOS DE BACKEND, BASE DE DATOS Y CONFIGURACIÓN
+# ------------------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Bloquear acceso HTTP directo a carpetas y archivos internos del repositorio
+    RewriteRule ^(\.git|\.env|backend|database|deploy|tests)(/|$) - [F,L,NC]
+    RewriteRule ^(Dockerfile|docker-compose\.yml|requirements\.txt|README\.md|LICENSE)$ - [F,L,NC]
+    RewriteRule \.(py|pyc|sql|db|sqlite|sqlite3|log|sh|service|conf|example|env)$ - [F,L,NC]
+
+    # Forzar HTTPS (obligatorio para instalación nativa PWA y Service Worker)
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Normalizar /angeles -> /angeles/
+    RewriteRule ^angeles$ /angeles/ [R=301,L]
+
+    # SPA Fallback dentro del directorio /angeles/ (rutas /angeles/login, /angeles/dashboard, etc.)
+    RewriteCond %{REQUEST_URI} ^/angeles/
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^angeles/.*$ /angeles/index.html [L]
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# 2. TIPOS MIME Y CABECERAS PWA (manifest.json y sw.js)
+# ------------------------------------------------------------------------------
+<IfModule mod_mime.c>
+    AddType application/manifest+json .webmanifest .json
+    AddType application/javascript .js .mjs
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    <FilesMatch "^sw\.js$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Service-Worker-Allowed "/angeles/"
+    </FilesMatch>
+</IfModule>
