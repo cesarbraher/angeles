@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * @project     ÁNGELES — Sistema Integral EHR & Gestión Clínica (PWA)
+ * @institution Ángeles de Esperanza A.C. (Irapuato, Guanajuato)
+ * @author      César Augusto Bravo Hernández
+ * @role        CESAR A. BRAVO - DevRel @Google
+ * @contact     cesarbraher@gmail.com | https://cebraher.com
+ * @copyright   Todos los derechos reservados © 2026 César Augusto Bravo Hernández
+ *
+ * Vector editable 100% compatible con Adobe Illustrator (.ai/.svg), Figma e Inkscape.
+ * Capas separadas: Fondo | Alas | Corazon | Cruz_Dorada
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     id="Logo_ANGELES"
+     viewBox="0 0 1000 1000"
+     width="1000"
+     height="1000">
+  <title>Emblema Oficial ÁNGELES — Ángeles de Esperanza A.C.</title>
+
+  <defs>
+    <!-- Gradiente radial sutil institucional -->
+    <radialGradient id="FondoAzulSereno" cx="50%" cy="48%" r="58%" fx="50%" fy="48%">
+      <stop offset="0%" stop-color="#14568D"/>
+      <stop offset="55%" stop-color="#0D4373"/>
+      <stop offset="100%" stop-color="#093258"/>
+    </radialGradient>
+
+    <!-- Máscara de recorte del corazón para el sombreado mitad derecha -->
+    <clipPath id="ClipCorazonDerecho">
+      <rect x="500" y="340" width="200" height="360"/>
+    </clipPath>
+
+    <!-- Silueta maestra del Ala Izquierda para recortar limpiamente las costillas internas -->
+    <clipPath id="ClipAlaIzquierda">
+      <path d="M 366 462
+               C 318 408, 250 364, 217 286
+               C 198 332, 198 380, 224 426
+               C 210 416, 199 404, 193 392
+               C 178 460, 206 534, 294 576
+               C 316 618, 368 656, 442 657
+               C 400 618, 370 554, 366 462 Z"/>
+    </clipPath>
+
+    <!-- Definición limpia y continua del Ala Izquierda -->
+    <g id="AlaBase">
+      <!-- Pluma superior principal (contorno exterior hacia punta superior) -->
+      <path d="M 366 462
+               C 318 408, 250 364, 217 286
+               C 194 344, 200 412, 260 462
+               C 292 488, 326 510, 362 528
+               L 356 508
+               C 322 490, 290 468, 265 444
+               C 226 406, 214 362, 222 322
+               C 254 378, 308 424, 358 476 Z"
+            fill="#FFFFFF"/>
+
+      <!-- Segunda pluma media (punta lateral izquierda y arco envolvente) -->
+      <path d="M 358 512
+               C 298 486, 228 452, 193 392
+               C 178 460, 206 534, 294 576
+               C 322 589, 348 594, 378 598
+               L 368 579
+               C 340 574, 314 567, 290 554
+               C 228 522, 202 476, 206 432
+               C 238 474, 296 506, 362 532 Z"
+            fill="#FFFFFF"/>
+
+      <!-- Tercera pluma inferior que acuna la base del corazón -->
+      <path d="M 294 568
+               C 316 618, 368 656, 442 657
+               L 426 641
+               C 374 638, 338 614, 318 576 Z"
+            fill="#FFFFFF"/>
+
+      <!-- Filigrana interior limpia (recortada exactamente dentro del contorno del ala) -->
+      <g clip-path="url(#ClipAlaIzquierda)" fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round">
+        <!-- Arco estructural vertical principal -->
+        <path d="M 295 390 C 272 454, 276 532, 314 596"/>
+        <!-- Arco estructural secundario interno -->
+        <path d="M 340 446 C 328 504, 336 558, 368 606"/>
+        <!-- Banda horizontal media siguiendo la curva del ala -->
+        <path d="M 226 498 C 272 518, 318 534, 366 544"/>
+        <!-- Banda inferior hacia el corazón -->
+        <path d="M 318 616 C 352 618, 382 610, 412 598"/>
+      </g>
+    </g>
+  </defs>
+
+  <!-- CAPA 1: FONDO INSTITUCIONAL -->
+  <g id="Fondo">
+    <rect x="0" y="0" width="1000" height="1000" fill="url(#FondoAzulSereno)"/>
+  </g>
+
+  <!-- CAPA 2: ALAS DE ÁNGEL (IZQUIERDA Y DERECHA SIMÉTRICAS) -->
+  <g id="Alas">
+    <g id="Ala_Izquierda">
+      <use href="#AlaBase"/>
+    </g>
+    <g id="Ala_Derecha" transform="translate(1000, 0) scale(-1, 1)">
+      <use href="#AlaBase"/>
+    </g>
+  </g>
+
+  <!-- CAPA 3: CORAZÓN CENTRAL (DOS TONOS SUAVES) -->
+  <g id="Corazon">
+    <path id="Corazon_Base"
+          d="M 500 676
+             C 430 634, 351 548, 351 452
+             C 351 398, 386 364, 428 364
+             C 461 364, 486 380, 500 400
+             C 514 380, 539 364, 572 364
+             C 614 364, 649 398, 649 452
+             C 649 548, 570 634, 500 676 Z"
+          fill="#FFFFFF"/>
+    <path id="Corazon_Sombra_Derecha"
+          d="M 500 676
+             C 430 634, 351 548, 351 452
+             C 351 398, 386 364, 428 364
+             C 461 364, 486 380, 500 400
+             C 514 380, 539 364, 572 364
+             C 614 364, 649 398, 649 452
+             C 649 548, 570 634, 500 676 Z"
+          fill="#EAEFF4"
+          clip-path="url(#ClipCorazonDerecho)"/>
+  </g>
+
+  <!-- CAPA 4: CRUZ MÉDICA DORADA (CONTORNO EDITABLE) -->
+  <g id="Cruz_Dorada">
+    <path id="Cruz_Trazo"
+          d="M 476 436
+             H 524
+             V 491
+             H 579
+             V 539
+             H 524
+             V 594
+             H 476
+             V 539
+             H 421
+             V 491
+             H 476
+             Z"
+          fill="none"
+          stroke="#CFA353"
+          stroke-width="14"
+          stroke-linejoin="miter"
+          stroke-miterlimit="4"/>
+  </g>
+</svg>
