@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<!--
+ * @project     ÁNGELES — Sistema Integral EHR & Gestión Clínica (PWA)
+ * @institution Ángeles de Esperanza A.C. (Irapuato, Guanajuato)
+ * @author      César Augusto Bravo Hernández
+ * @role        CESAR A. BRAVO - DevRel @Google
+ * @contact     cesarbraher@gmail.com | https://cebraher.com
+ * @copyright   Todos los derechos reservados © 2026 César Augusto Bravo Hernández
+-->
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FUNDACIÓN BRAHER</title>
+  <meta name="description" content="FUNDACIÓN BRAHER — Portal principal en cebraher.org con acceso directo al sistema ÁNGELES." />
+  <meta name="theme-color" content="#0F4C81" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/angeles/assets/icons/favicon-32x32.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --blue-950: #0A3154;
+      --blue-900: #0F4C81;
+      --gold-500: #B8862D;
+      --bg-canvas: #F6F8FB;
+      --surface: #FFFFFF;
+      --text-primary: #0F172A;
+      --text-muted: #64748B;
+      --border-light: #E2E8F0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, #FFFFFF 0%, var(--bg-canvas) 68%);
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px;
+      text-align: center;
+    }
+
+    main {
+      width: 100%;
+      max-width: 640px;
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: 24px;
+      padding: clamp(44px, 7vw, 72px) clamp(24px, 5vw, 52px);
+      box-shadow: 0 20px 50px rgba(15, 76, 129, 0.08);
+    }
+
+    .accent-rule {
+      width: 48px;
+      height: 3px;
+      background: var(--gold-500);
+      border-radius: 999px;
+      margin: 0 auto 24px;
+    }
+
+    h1 {
+      margin: 0 0 36px;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      font-size: clamp(2rem, 5.2vw, 3.1rem);
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      line-height: 1.15;
+      color: var(--blue-950);
+    }
+
+    .angeles-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 50px;
+      padding: 0 28px;
+      border-radius: 12px;
+      background: var(--blue-900);
+      color: #FFFFFF;
+      text-decoration: none;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      font-size: 0.98rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      box-shadow: 0 8px 20px rgba(15, 76, 129, 0.22);
+      transition: background 0.18s ease, transform 0.14s ease, box-shadow 0.18s ease;
+    }
+
+    .angeles-link:hover {
+      background: var(--blue-950);
+      transform: translateY(-1px);
+      box-shadow: 0 12px 26px rgba(15, 76, 129, 0.28);
+    }
+
+    .angeles-link:active {
+      transform: translateY(0);
+    }
+
+    .path-hint {
+      margin: 16px 0 0;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+    }
+
+    .path-hint a {
+      color: var(--blue-900);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .path-hint a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="accent-rule" aria-hidden="true"></div>
+    <h1>FUNDACIÓN BRAHER</h1>
+    <a class="angeles-link" id="link-sistema-angeles" href="/angeles/">
+      <span>Sistema ÁNGELES</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="5" y1="12" x2="19" y2="12"/>
+        <polyline points="12 5 19 12 12 19"/>
+      </svg>
+    </a>
+    <p class="path-hint">
+      <a href="/angeles/">braher.org/angeles</a>
+    </p>
+  </main>
+</body>
+</html>

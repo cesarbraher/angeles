@@ -1,0 +1,26 @@
+# ==============================================================================
+# @project     ÁNGELES — Sistema Integral EHR & Gestión Clínica (PWA)
+# @institution Ángeles de Esperanza A.C. (Irapuato, Guanajuato)
+# @author      César Augusto Bravo Hernández
+# @role        CESAR A. BRAVO - DevRel @Google
+# @contact     cesarbraher@gmail.com | https://cebraher.com
+# @copyright   Todos los derechos reservados © 2026 César Augusto Bravo Hernández
+# ==============================================================================
+# Instalar en: /etc/systemd/system/angeles.service
+
+[Unit]
+Description=ANGELES — Sistema Integral EHR & Gestión Clínica (PWA FastAPI)
+After=network.target mysql.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/angeles
+EnvironmentFile=/var/www/angeles/.env
+ExecStart=/var/www/angeles/.venv/bin/uvicorn backend.main:app --host 127.0.0.1 --port 8000 --workers 2 --proxy-headers
+Restart=always
+RestartSec=4
+
+[Install]
+WantedBy=multi-user.target

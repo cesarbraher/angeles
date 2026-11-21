@@ -1,0 +1,44 @@
+{
+  "name": "ÁNGELES — Gestión Clínica y Rehabilitación",
+  "short_name": "ÁNGELES",
+  "description": "Sistema Integral de Expediente Clínico Electrónico para Ángeles de Esperanza A.C.",
+  "start_url": "/angeles/dashboard",
+  "scope": "/angeles/",
+  "id": "/angeles/dashboard",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "lang": "es-MX",
+  "dir": "ltr",
+  "background_color": "#F8FAFC",
+  "theme_color": "#0F4C81",
+  "categories": ["medical", "health", "productivity"],
+  "author": "César Augusto Bravo Hernández — CESAR A. BRAVO - DevRel @Google (https://cebraher.com)",
+  "copyright": "Todos los derechos reservados © 2026 César Augusto Bravo Hernández",
+  "icons": [
+    { "src": "/angeles/assets/icons/icon-72x72.png",   "sizes": "72x72",   "type": "image/png", "purpose": "any" },
+    { "src": "/angeles/assets/icons/icon-96x96.png",   "sizes": "96x96",   "type": "image/png", "purpose": "any" },
+    { "src": "/angeles/assets/icons/icon-128x128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+    { "src": "/angeles/assets/icons/icon-144x144.png", "sizes": "144x144", "type": "image/png", "purpose": "any" },
+    { "src": "/angeles/assets/icons/icon-152x152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
+    { "src": "/angeles/assets/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/angeles/assets/icons/icon-384x384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
+    { "src": "/angeles/assets/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Panel de Control",
+      "short_name": "Panel",
+      "description": "Indicadores y expedientes activos",
+      "url": "/angeles/dashboard",
+      "icons": [{ "src": "/angeles/assets/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Expedientes Clínicos",
+      "short_name": "Expedientes",
+      "description": "Consultar y gestionar expedientes",
+      "url": "/angeles/expedientes",
+      "icons": [{ "src": "/angeles/assets/icons/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}
